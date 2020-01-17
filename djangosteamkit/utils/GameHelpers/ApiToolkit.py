@@ -27,6 +27,3 @@ class ApiToolkit:
                 price = float(str(price)[0:-2] + "." + str(price)[-2:])
 
         return price
-
-game = ApiToolkit(710920)
-print(game.get_price())
