@@ -1,5 +1,11 @@
+import gevent
+from gevent import monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
 from steam.client import SteamClient
 from steam.enums import EResult
+from django.utils.text import slugify
+from utils.GameHelpers.ApiToolkit import get_price
 
 class Client:
 
@@ -49,15 +55,16 @@ class Client:
 
     """
     - A method that returns all product information for a specified appid
-    - Mainly used for testingpurposes as it doesn't parse out any information from the response
     """
     def get_all_product_info(self, appid):
-        return client.get_product_info([appid])
-
-    def get_product_info(self, appid):
         res = client.get_product_info([appid])
-        name = res['apps'][appid]['common']['name']
-        return name
+        api = get_price(str(appid))
+        info = {
+            'name': res['apps'][appid]['common']['name'],
+            'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
+            'price': api
+        }
+        return info
 
     """
     - Gets the changes from the client from a previous change number
