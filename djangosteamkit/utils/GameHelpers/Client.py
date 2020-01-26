@@ -58,11 +58,18 @@ class Client:
     """
     def get_all_product_info(self, appid):
         res = client.get_product_info([appid])
-        api = get_price(str(appid))
+        print(res)
+
+        try:
+            price = get_price(str(appid))
+        except:
+            price = None
+            
         info = {
             'name': res['apps'][appid]['common']['name'],
             'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
-            'price': api
+            'price': price,
+            'oslist': res['apps'][appid]['common']['oslist']
         }
         return info
 

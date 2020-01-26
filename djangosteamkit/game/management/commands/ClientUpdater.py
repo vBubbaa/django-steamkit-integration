@@ -1,5 +1,5 @@
 from utils.GameHelpers.Client import Client
-from game.models import Game, GameChange
+from game.models import Game, GameChange, OSOptions
 from django.core.management.base import BaseCommand, CommandError
 import time
 
@@ -18,22 +18,29 @@ class Command(BaseCommand):
         client.login()
 
         # An initial change number to start working at
-        initialChangeNum = 7612318
+        initialChangeNum = 1
 
         # initial changes based on the initial change number
         changes = client.get_changes(initialChangeNum)
 
-        # The current change number we are on
-        currentChangeNum = changes.since_change_number
-
         # The next change number
         nextChangeNum = changes.current_change_number
 
+        # The current change number we are on
+        # We set it to the next change number so that we can start monitoring from the current change number
+        # next change -1 for testing
+        currentChangeNum = nextChangeNum - 1
+
+        changes = client.get_changes(currentChangeNum)
+
+        """
+        TODO:
+        - Filter game swith releasestate: 'prerelease' to not fetch the price
+        - Access game content with user pattern like: https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/570/d4f836839254be08d8e9dd333ecc9a01782c26d2_thumb.jpg
+        """
+
         # Loop forever to monitor client changes, waits 10 seconds to check for new changes
         while True:
-            # Set the changes to the current change number
-            # changes = client.get_changes(currentChangeNum)
-
             print("################### changes ###################")
             print("Current: " + str(currentChangeNum))
             print("Next: " + str(nextChangeNum))
@@ -41,6 +48,7 @@ class Command(BaseCommand):
             # If no new changes
             if (currentChangeNum != nextChangeNum):
                 print("Changes have occured")
+                print(changes)
                 for change in changes.app_changes:
                     print("App Change: " + str(change.appid))
                     # If App exists, update it
@@ -52,8 +60,21 @@ class Command(BaseCommand):
                         appid = change.appid
                         print(str(appid))
                         gameInfo = client.get_all_product_info(appid)
-                        print(gameInfo)
+
                         game = Game(appid=appid, name=gameInfo['name'], slug=gameInfo['slug'], price=gameInfo['price'])
+                        game.save()
+
+                        # OS list Stuff
+                        oslist = gameInfo['oslist'].split(',')
+                        for os in oslist:
+                            print("################## OS #######################")
+                            print(os)
+                            if (os == 'windows'):
+                                game.os.add(OSOptions.objects.get(os='WIN'))
+                            elif (os == 'macos'):
+                                game.os.add(OSOptions.objects.get(os='MAC'))
+                            else:
+                                game.os.add(OSOptions.objects.get(os='LIN'))
                         game.save()
 
                         print("Change Number " + str(change.change_number) + ' registered.')
@@ -63,7 +84,7 @@ class Command(BaseCommand):
 
                 # Set changes to the new current change number
                 changes = client.get_changes(currentChangeNum)
-                time.sleep(1)
+                time.sleep(10)
 
             else:
                 print("No Changes")
