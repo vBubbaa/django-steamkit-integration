@@ -64,12 +64,18 @@ class Client:
             price = get_price(str(appid))
         except:
             price = None
-            
+
         info = {
             'name': res['apps'][appid]['common']['name'],
             'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
             'price': price,
-            'oslist': res['apps'][appid]['common']['oslist']
+            'oslist': res['apps'][appid]['common']['oslist'],
+            'releasestate': res['apps'][appid]['common']['releasestate'],
+            'icon': res['apps'][appid]['common']['icon'],
+            'logo': res['apps'][appid]['common']['logo'],
+            'logo_small': res['apps'][appid]['common']['logo_small'],
+            'clienticon': res['apps'][appid]['common']['clienticon'],
+            'clienttga': res['apps'][appid]['common']['clienttga'],
         }
         return info
 

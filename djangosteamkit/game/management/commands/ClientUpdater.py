@@ -61,7 +61,18 @@ class Command(BaseCommand):
                         print(str(appid))
                         gameInfo = client.get_all_product_info(appid)
 
-                        game = Game(appid=appid, name=gameInfo['name'], slug=gameInfo['slug'], price=gameInfo['price'])
+                        game = Game(
+                            appid=appid,
+                            name=gameInfo['name'],
+                            slug=gameInfo['slug'],
+                            price=gameInfo['price'],
+                            release_state=gameInfo['releasestate'],
+                            icon=gameInfo['icon'],
+                            logo=gameInfo['logo'],
+                            logo_small=gameInfo['logo_small'],
+                            clienticon=gameInfo['clienticon'],
+                            clienttga=gameInfo['clienttga'],
+                        )
                         game.save()
 
                         # OS list Stuff
@@ -70,11 +81,11 @@ class Command(BaseCommand):
                             print("################## OS #######################")
                             print(os)
                             if (os == 'windows'):
-                                game.os.add(OSOptions.objects.get(os='WIN'))
+                                game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
                             elif (os == 'macos'):
-                                game.os.add(OSOptions.objects.get(os='MAC'))
+                                game.os.add(OSOptions.objects.get(os=OSOptions.MAC))
                             else:
-                                game.os.add(OSOptions.objects.get(os='LIN'))
+                                game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
                         game.save()
 
                         print("Change Number " + str(change.change_number) + ' registered.')

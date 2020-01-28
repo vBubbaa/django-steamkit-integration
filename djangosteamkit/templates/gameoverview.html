@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <div>
+      <p>name: {{ game.name }}</p>
+      <p>appid: {{ game.appid }}</p>
+      <p>slug: {{ game.slug }}</p>
+      <p>price: {{ game.price }}</p>
+      <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
+      <p>releasestate: {{ game.release_state}}</p>
+      <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.icon}}.jpg" target="_blank">
+          {{ game.icon }}
+        </a>
+      </p>
+      <p>logo: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.logo}}.jpg" target="_blank">
+          {{ game.logo }}
+        </a>
+      </p>
+      <p>logo_small: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.logo_small}}.jpg" target="_blank">
+          {{ game.logo_small }}
+        </a>
+      </p>
+      <p>clienticon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.clienticon}}.jpg" target="_blank">
+          {{ game.clienticon }}
+        </a>
+      </p>
+      <p>clienttga: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.clienttga}}.jpg" target="_blank">
+          {{ game.clienttga }}
+        </a>
+      </p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Steamkit Django integration</title>
+  </head>
+  <body>
+    <h1>Games</h1>
+    <div>
+      {% for g in games %}
+        <div>
+          <a href="{% url 'game:gameoverview' g.appid g.slug %}">{{ g.name }}</a>
+        </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

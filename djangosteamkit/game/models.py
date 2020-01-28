@@ -7,6 +7,12 @@ class Game(models.Model):
     slug = models.SlugField()
     price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     os = models.ManyToManyField('OSOptions')
+    release_state = models.CharField(max_length=32, null=True)
+    icon = models.CharField(max_length=128, null=True)
+    logo = models.CharField(max_length=128, null=True)
+    logo_small = models.CharField(max_length=128, null=True)
+    clienticon = models.CharField(max_length=128, null=True)
+    clienttga = models.CharField(max_length=128, null=True)
 
     def __str__(self):
         return self.name
