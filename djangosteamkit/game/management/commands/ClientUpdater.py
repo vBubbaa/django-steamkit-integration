@@ -85,10 +85,22 @@ class Command(BaseCommand):
                             elif (os == 'macos'):
                                 game.os.add(OSOptions.objects.get(os=OSOptions.MAC))
                             else:
-                                game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
+                                game.os.add(OSOptions.objects.get(os=OSOptions.LIN))
                         game.save()
 
-                        print("Change Number " + str(change.change_number) + ' registered.')
+                        # Change number stuff
+                        gamechange = GameChange(
+                            change_number=change.change_number,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.ADD,
+                                game.appid,
+                            ),
+                            action=GameChange.ADD
+                        )
+                        gamechange.save()
+
+                        print("Change Number " + str(gamechange.change_number) + ' registered.')
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNum = nextChangeNum

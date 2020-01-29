@@ -18,13 +18,27 @@ class Game(models.Model):
         return self.name
 
 class GameChange(models.Model):
-    change_id = models.IntegerField()
+    # Action constants
+    ADD = 'ADD'
+    UPDATE = 'UPDATE'
+
+    change_number = models.IntegerField()
     game = models.ForeignKey(Game, on_delete=models.CASCADE, default=None)
     created_time = models.DateTimeField(default=timezone.now)
     changelog = models.CharField(max_length=264, default=None)
+    action = models.CharField(max_length=8, null=True)
 
     def __str__(self):
         return self.changelog
+
+    def changelog_builder(action, appid, payload=None):
+        if payload:
+            changelog = str(action) + ' ' + str(appid) + ': ' + str(payload)
+        else:
+            changelog = str(action) + ' ' + str(appid) + ' to the database'
+        return changelog
+
+
 
 class OSOptions(models.Model):
     # OS Constants

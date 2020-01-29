@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
     <title>Steamkit Django integration</title>
   </head>
   <body>
@@ -10,6 +11,15 @@
       {% for g in games %}
         <div>
           <a href="{% url 'game:gameoverview' g.appid g.slug %}">{{ g.name }}</a>
+        </div>
+      {% endfor %}
+    </div>
+    {% load humanize %}
+    <h1>Recent Changes</h1>
+    <div>
+      {% for change in changelog %}
+        <div>
+          {% if change.action == 'ADD' %}<i class="fas fa-plus-circle"></i> {% else %}<i class="fas fa-wrench"></i> {% endif %}{{ change.change_number }} {{ change.action }} for app <a href="{% url 'game:gameoverview' change.game.appid change.game.slug %}">{{ change.game.name }} </a>{{change.created_time|naturaltime}}
         </div>
       {% endfor %}
     </div>
