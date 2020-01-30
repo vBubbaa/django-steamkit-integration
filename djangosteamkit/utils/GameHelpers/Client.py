@@ -65,18 +65,56 @@ class Client:
         except:
             price = None
 
-        info = {
-            'name': res['apps'][appid]['common']['name'],
-            'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
-            'price': price,
-            'oslist': res['apps'][appid]['common']['oslist'],
-            'releasestate': res['apps'][appid]['common']['releasestate'],
-            'icon': res['apps'][appid]['common']['icon'],
-            'logo': res['apps'][appid]['common']['logo'],
-            'logo_small': res['apps'][appid]['common']['logo_small'],
-            'clienticon': res['apps'][appid]['common']['clienticon'],
-            'clienttga': res['apps'][appid]['common']['clienttga'],
-        }
+        # If we dont get the common section, we dont have access to the information
+        try:
+            print('####### hit #######')
+            # Constansts that might return null
+            try:
+                oslist = res['apps'][appid]['common']['oslist']
+            except:
+                oslist = None
+            try:
+                releasestate = res['apps'][appid]['common']['releasestate']
+            except:
+                releasestate = None
+            try:
+                icon = res['apps'][appid]['common']['icon']
+            except:
+                icon = None
+            try:
+                logo = res['apps'][appid]['common']['logo']
+            except:
+                logo = None
+            try:
+                logo_small = res['apps'][appid]['common']['logo_small']
+            except:
+                logo_small = None
+            try:
+                clienticon = res['apps'][appid]['common']['clienticon']
+            except:
+                clienticon = None
+            try:
+                clienttga = res['apps'][appid]['common']['clienttga']
+            except:
+                clienttga = None
+
+            info = {
+                'name': res['apps'][appid]['common']['name'],
+                'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
+                'price': price,
+                'oslist': oslist,
+                'releasestate': releasestate,
+                'icon': icon,
+                'logo': logo,
+                'logo_small': logo_small,
+                'clienticon': clienticon,
+                'clienttga': clienttga
+            }
+
+        # If there is not information available return None
+        except:
+            info = None
+
         return info
 
     """

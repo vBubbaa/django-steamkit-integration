@@ -61,49 +61,57 @@ class Command(BaseCommand):
                         print(str(appid))
                         gameInfo = client.get_all_product_info(appid)
 
-                        game = Game(
-                            appid=appid,
-                            name=gameInfo['name'],
-                            slug=gameInfo['slug'],
-                            price=gameInfo['price'],
-                            release_state=gameInfo['releasestate'],
-                            icon=gameInfo['icon'],
-                            logo=gameInfo['logo'],
-                            logo_small=gameInfo['logo_small'],
-                            clienticon=gameInfo['clienticon'],
-                            clienttga=gameInfo['clienttga'],
-                        )
-                        game.save()
+                        if gameInfo is not None:
+                            game = Game(
+                                appid=appid,
+                                name=gameInfo['name'],
+                                slug=gameInfo['slug'],
+                                price=gameInfo['price'],
+                                release_state=gameInfo['releasestate'],
+                                icon=gameInfo['icon'],
+                                logo=gameInfo['logo'],
+                                logo_small=gameInfo['logo_small'],
+                                clienticon=gameInfo['clienticon'],
+                                clienttga=gameInfo['clienttga'],
+                            )
+                            game.save()
 
-                        # OS list Stuff
-                        oslist = gameInfo['oslist'].split(',')
-                        for os in oslist:
-                            print("################## OS #######################")
-                            print(os)
-                            if (os == 'windows'):
-                                game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
-                            elif (os == 'macos'):
-                                game.os.add(OSOptions.objects.get(os=OSOptions.MAC))
-                            else:
-                                game.os.add(OSOptions.objects.get(os=OSOptions.LIN))
-                        game.save()
+                            # OS list Stuff
+                            oslist = gameInfo['oslist']
+                            print('OSLIST@@@@@@@@@@@@@@@@@@@@@@@ ' + str(oslist))
+                            if oslist is not None:
+                                oslist = gameInfo['oslist'].split(',')
+                                for os in oslist:
+                                    print("################## OS #######################")
+                                    print(os)
+                                    if (os == 'windows'):
+                                        game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
+                                    elif (os == 'macos'):
+                                        game.os.add(OSOptions.objects.get(os=OSOptions.MAC))
+                                    else:
+                                        game.os.add(OSOptions.objects.get(os=OSOptions.LIN))
+                                game.save()
 
-                        # Change number stuff
-                        gamechange = GameChange(
-                            change_number=change.change_number,
-                            game=game,
-                            changelog=GameChange.changelog_builder(
-                                GameChange.ADD,
-                                game.appid,
-                            ),
-                            action=GameChange.ADD
-                        )
-                        gamechange.save()
+                            # Change number stuff
+                            gamechange = GameChange(
+                                change_number=change.change_number,
+                                game=game,
+                                changelog=GameChange.changelog_builder(
+                                    GameChange.ADD,
+                                    game.appid,
+                                ),
+                                action=GameChange.ADD
+                            )
+                            gamechange.save()
 
-                        print("Change Number " + str(gamechange.change_number) + ' registered.')
+                            print("Change Number " + str(gamechange.change_number) + ' registered.')
+                        else:
+                            print('######### no common section, continue on #########')
+                            continue
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNum = nextChangeNum
+                print('current change num after actions ' + str(currentChangeNum))
 
                 # Set changes to the new current change number
                 changes = client.get_changes(currentChangeNum)
