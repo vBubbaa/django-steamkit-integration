@@ -17,38 +17,29 @@ class Command(BaseCommand):
         client = Client()
         client.login()
 
-        # An initial change number to start working at
-        initialChangeNum = 1
-
-        # initial changes based on the initial change number
-        changes = client.get_changes(initialChangeNum)
-
-        # The next change number
-        nextChangeNum = changes.current_change_number
-
-        # The current change number we are on
-        # We set it to the next change number so that we can start monitoring from the current change number
-        # next change -1 for testing
-        currentChangeNum = nextChangeNum - 1
-
-        changes = client.get_changes(currentChangeNum)
-
         """
-        TODO:
-        - Filter game swith releasestate: 'prerelease' to not fetch the price
-        - Access game content with user pattern like: https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/570/d4f836839254be08d8e9dd333ecc9a01782c26d2_thumb.jpg
+        - This function grabs the current change number that the steam client is on
+        - The script will use this to check for new change numbers
         """
+        def getCurrentChangeNumber():
+            changes = client.get_changes(1)
+            currentChangeNum = changes.current_change_number
+            return currentChangeNum
+
+        # The current change number out script is on
+        # This is the init where we set it to the current number on the steam client
+        # - 1 for testing, so we always have fresh changes to look at
+        currentChangeNumber = getCurrentChangeNumber()
 
         # Loop forever to monitor client changes, waits 10 seconds to check for new changes
         while True:
-            print("################### changes ###################")
-            print("Current: " + str(currentChangeNum))
-            print("Next: " + str(nextChangeNum))
+            # Sets the changes to always be at the current change number in our script
+            changes = client.get_changes(currentChangeNumber)
 
             # If no new changes
-            if (currentChangeNum != nextChangeNum):
+            if (currentChangeNumber != getCurrentChangeNumber()):
                 print("Changes have occured")
-                print(changes)
+                print('Changes: ' + str(changes))
                 for change in changes.app_changes:
                     print("App Change: " + str(change.appid))
                     # If App exists, update it
@@ -60,6 +51,8 @@ class Command(BaseCommand):
                         appid = change.appid
                         print(str(appid))
                         gameInfo = client.get_all_product_info(appid)
+
+                        print('hit before gamInfo')
 
                         if gameInfo is not None:
                             game = Game(
@@ -75,6 +68,8 @@ class Command(BaseCommand):
                                 clienttga=gameInfo['clienttga'],
                             )
                             game.save()
+
+                            print('hit after gameinfo')
 
                             # OS list Stuff
                             oslist = gameInfo['oslist']
@@ -110,12 +105,8 @@ class Command(BaseCommand):
                             continue
 
                 # Sets the next change number to the current, so we can check for the next change number
-                currentChangeNum = nextChangeNum
-                print('current change num after actions ' + str(currentChangeNum))
-
-                # Set changes to the new current change number
-                changes = client.get_changes(currentChangeNum)
-                time.sleep(10)
+                currentChangeNumber = getCurrentChangeNumber()
+                print('current change num after actions ' + str(currentChangeNumber))
 
             else:
                 print("No Changes")

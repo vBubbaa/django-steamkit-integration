@@ -67,37 +67,17 @@ class Client:
 
         # If we dont get the common section, we dont have access to the information
         try:
-            print('####### hit #######')
             # Constansts that might return null
-            try:
-                oslist = res['apps'][appid]['common']['oslist']
-            except:
-                oslist = None
-            try:
-                releasestate = res['apps'][appid]['common']['releasestate']
-            except:
-                releasestate = None
-            try:
-                icon = res['apps'][appid]['common']['icon']
-            except:
-                icon = None
-            try:
-                logo = res['apps'][appid]['common']['logo']
-            except:
-                logo = None
-            try:
-                logo_small = res['apps'][appid]['common']['logo_small']
-            except:
-                logo_small = None
-            try:
-                clienticon = res['apps'][appid]['common']['clienticon']
-            except:
-                clienticon = None
-            try:
-                clienttga = res['apps'][appid]['common']['clienttga']
-            except:
-                clienttga = None
+            # If they do return null we just pass it as a None value
+            oslist = res['apps'][appid]['common'].get('oslist', None)
+            releasestate = res['apps'][appid]['common'].get('common', None)
+            icon = res['apps'][appid]['common'].get('icon', None)
+            logo = res['apps'][appid]['common'].get('logo', None)
+            logo_small = res['apps'][appid]['common'].get('logo_small', None)
+            clienticon = res['apps'][appid]['common'].get('clienticon', None)
+            clienttga = res['apps'][appid]['common'].get('clienttga', None)
 
+            # Dictionary we pass to the updater to save as values into our DB 
             info = {
                 'name': res['apps'][appid]['common']['name'],
                 'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),

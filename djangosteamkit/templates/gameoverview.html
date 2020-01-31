@@ -12,23 +12,23 @@
       <p>price: {{ game.price }}</p>
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
-      <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.icon}}.jpg" target="_blank">
+      <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.icon }}.jpg" target="_blank">
           {{ game.icon }}
         </a>
       </p>
-      <p>logo: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.logo}}.jpg" target="_blank">
+      <p>logo: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo }}.jpg" target="_blank">
           {{ game.logo }}
         </a>
       </p>
-      <p>logo_small: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.logo_small}}.jpg" target="_blank">
+      <p>logo_small: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo_small }}.jpg" target="_blank">
           {{ game.logo_small }}
         </a>
       </p>
-      <p>clienticon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.clienticon}}.jpg" target="_blank">
+      <p>clienticon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienticon }}.ico" target="_blank">
           {{ game.clienticon }}
         </a>
       </p>
-      <p>clienttga: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ g.appid }}/{{g.clienttga}}.jpg" target="_blank">
+      <p>clienttga: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienttga }}.jpg" target="_blank">
           {{ game.clienttga }}
         </a>
       </p>
