@@ -3,10 +3,6 @@ from utils.GameHelpers.ApiToolkit import get_price
 from django.utils.text import slugify
 from steam.enums import EResult
 from steam.client import SteamClient
-import gevent
-from gevent import monkey
-gevent.monkey.patch_socket()
-gevent.monkey.patch_ssl()
 
 # Debug segmentation faults
 faulthandler.enable()

@@ -1,10 +1,12 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Game(models.Model):
     appid = models.IntegerField()
     name = models.CharField(max_length=264)
     slug = models.SlugField()
+    # Get price from API (apitoolkit.py)
     price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
     os = models.ManyToManyField('OSOptions')
     release_state = models.CharField(max_length=32, null=True)
@@ -16,6 +18,7 @@ class Game(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class GameChange(models.Model):
     # Action constants
@@ -37,7 +40,6 @@ class GameChange(models.Model):
         else:
             changelog = str(action) + ' ' + str(appid) + ' to the database'
         return changelog
-
 
 
 class OSOptions(models.Model):

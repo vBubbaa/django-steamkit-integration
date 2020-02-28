@@ -1,7 +1,15 @@
-from utils.GameHelpers.Client import Client
-from game.models import Game, GameChange, OSOptions
-from django.core.management.base import BaseCommand, CommandError
+import gevent
+from gevent import monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
+
+########################
+
 import time
+from django.core.management.base import BaseCommand, CommandError
+from game.models import Game, GameChange, OSOptions
+from utils.GameHelpers.Client import Client
+
 
 """
 This Django management command serves as a method of continuously running and monitoring
@@ -10,6 +18,7 @@ client changes which updates the game objects in our database
 Usage:
 - python manage.py ClientUpdater
 """
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -79,14 +88,18 @@ class Command(BaseCommand):
                             if oslist is not None:
                                 oslist = gameInfo['oslist'].split(',')
                                 for os in oslist:
-                                    print("################## OS #######################")
+                                    print(
+                                        "################## OS #######################")
                                     print(os)
                                     if (os == 'windows'):
-                                        game.os.add(OSOptions.objects.get(os=OSOptions.WIN))
+                                        game.os.add(
+                                            OSOptions.objects.get(os=OSOptions.WIN))
                                     elif (os == 'macos'):
-                                        game.os.add(OSOptions.objects.get(os=OSOptions.MAC))
+                                        game.os.add(
+                                            OSOptions.objects.get(os=OSOptions.MAC))
                                     else:
-                                        game.os.add(OSOptions.objects.get(os=OSOptions.LIN))
+                                        game.os.add(
+                                            OSOptions.objects.get(os=OSOptions.LIN))
                                 game.save()
 
                             # Change number stuff
@@ -101,15 +114,18 @@ class Command(BaseCommand):
                             )
                             gamechange.save()
 
-                            print("Change Number " + str(gamechange.change_number) + ' registered.')
+                            print("Change Number " +
+                                  str(gamechange.change_number) + ' registered.')
                             time.sleep(.5)
                         else:
-                            print('######### no common section, continue on #########')
+                            print(
+                                '######### no common section, continue on #########')
                             continue
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNumber = getCurrentChangeNumber()
-                print('current change num after actions ' + str(currentChangeNumber))
+                print('current change num after actions ' +
+                      str(currentChangeNumber))
 
             else:
                 print("No Changes")
