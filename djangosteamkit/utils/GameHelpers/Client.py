@@ -1,11 +1,16 @@
+import faulthandler
+from utils.GameHelpers.ApiToolkit import get_price
+from django.utils.text import slugify
+from steam.enums import EResult
+from steam.client import SteamClient
 import gevent
 from gevent import monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
-from steam.client import SteamClient
-from steam.enums import EResult
-from django.utils.text import slugify
-from utils.GameHelpers.ApiToolkit import get_price
+
+# Debug segmentation faults
+faulthandler.enable()
+
 
 class Client:
 
@@ -50,19 +55,22 @@ class Client:
     """
     - Performs a login to the Steam client with an anonymous login
     """
+
     def login(self):
         client.anonymous_login()
 
     """
     - A method that returns all product information for a specified appid
     """
+
     def get_all_product_info(self, appid):
         res = client.get_product_info([appid])
         print(res)
 
         try:
             price = get_price(str(appid))
-        except:
+        except Exception as e:
+            print('price exception: ' + str(e))
             price = None
 
         # If we dont get the common section, we dont have access to the information
@@ -70,14 +78,15 @@ class Client:
             # Constansts that might return null
             # If they do return null we just pass it as a None value
             oslist = res['apps'][appid]['common'].get('oslist', None)
-            releasestate = res['apps'][appid]['common'].get('common', None)
+            releasestate = res['apps'][appid]['common'].get(
+                'releasestate', None)
             icon = res['apps'][appid]['common'].get('icon', None)
             logo = res['apps'][appid]['common'].get('logo', None)
             logo_small = res['apps'][appid]['common'].get('logo_small', None)
             clienticon = res['apps'][appid]['common'].get('clienticon', None)
             clienttga = res['apps'][appid]['common'].get('clienttga', None)
 
-            # Dictionary we pass to the updater to save as values into our DB 
+            # Dictionary we pass to the updater to save as values into our DB
             info = {
                 'name': res['apps'][appid]['common']['name'],
                 'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
@@ -92,7 +101,10 @@ class Client:
             }
 
         # If there is not information available return None
-        except:
+        except Exception as e:
+            print('#######################################################')
+            print('client exception: ' + str(e))
+            print('#######################################################')
             info = None
 
         return info
@@ -100,5 +112,6 @@ class Client:
     """
     - Gets the changes from the client from a previous change number
     """
+
     def get_changes(self, change_num):
-        return client.get_changes_since(change_number = change_num, app_changes=True, package_changes=False)
+        return client.get_changes_since(change_number=change_num, app_changes=True, package_changes=False)

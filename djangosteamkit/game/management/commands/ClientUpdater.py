@@ -36,6 +36,8 @@ class Command(BaseCommand):
             # Sets the changes to always be at the current change number in our script
             changes = client.get_changes(currentChangeNumber)
 
+            print('after change declaration hit')
+
             # If no new changes
             if (currentChangeNumber != getCurrentChangeNumber()):
                 print("Changes have occured")
@@ -100,6 +102,7 @@ class Command(BaseCommand):
                             gamechange.save()
 
                             print("Change Number " + str(gamechange.change_number) + ' registered.')
+                            time.sleep(.5)
                         else:
                             print('######### no common section, continue on #########')
                             continue
