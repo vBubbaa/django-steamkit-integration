@@ -14,10 +14,14 @@ class Game(models.Model):
     logo = models.CharField(max_length=128, null=True)
     logo_small = models.CharField(max_length=128, null=True)
     clienticon = models.CharField(max_length=128, null=True)
-    clienttga = models.CharField(max_length=128, null=True)
+    supported_languages = models.ManyToManyField('Languages')
 
     def __str__(self):
         return self.name
+
+    # Build the url to the given picture val (icon, logo, logo_small, clienticon)
+    def pictureUrlBuilder(self, val):
+        return 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + self.appid + '/ ' + val + '.jpg'
 
 
 class GameChange(models.Model):
@@ -59,3 +63,10 @@ class OSOptions(models.Model):
 
     def __str__(self):
         return self.os
+
+
+class Languages(models.Model):
+    language = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.language

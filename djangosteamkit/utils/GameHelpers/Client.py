@@ -80,7 +80,8 @@ class Client:
             logo = res['apps'][appid]['common'].get('logo', None)
             logo_small = res['apps'][appid]['common'].get('logo_small', None)
             clienticon = res['apps'][appid]['common'].get('clienticon', None)
-            clienttga = res['apps'][appid]['common'].get('clienttga', None)
+            languages = res['apps'][appid]['common'].get(
+                'supported_languages', None)
 
             # Dictionary we pass to the updater to save as values into our DB
             info = {
@@ -93,7 +94,7 @@ class Client:
                 'logo': logo,
                 'logo_small': logo_small,
                 'clienticon': clienticon,
-                'clienttga': clienttga
+                'languages': languages
             }
 
         # If there is not information available return None

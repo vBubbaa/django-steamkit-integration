@@ -7,8 +7,9 @@ gevent.monkey.patch_ssl()
 
 import time
 from django.core.management.base import BaseCommand, CommandError
-from game.models import Game, GameChange, OSOptions
+from utils.GameHelpers.ModelProcessor import ProcessNewGame, ProcessExistingGame
 from utils.GameHelpers.Client import Client
+from game.models import Game
 
 
 """
@@ -60,67 +61,7 @@ class Command(BaseCommand):
                     else:
                         print('Game does not exist')
                         appid = change.appid
-                        print(str(appid))
-                        gameInfo = client.get_all_product_info(appid)
-
-                        print('hit before gamInfo')
-
-                        if gameInfo is not None:
-                            game = Game(
-                                appid=appid,
-                                name=gameInfo['name'],
-                                slug=gameInfo['slug'],
-                                price=gameInfo['price'],
-                                release_state=gameInfo['releasestate'],
-                                icon=gameInfo['icon'],
-                                logo=gameInfo['logo'],
-                                logo_small=gameInfo['logo_small'],
-                                clienticon=gameInfo['clienticon'],
-                                clienttga=gameInfo['clienttga'],
-                            )
-                            game.save()
-
-                            print('hit after gameinfo')
-
-                            # OS list Stuff
-                            oslist = gameInfo['oslist']
-                            print('OSLIST@@@@@@@@@@@@@@@@@@@@@@@ ' + str(oslist))
-                            if oslist is not None:
-                                oslist = gameInfo['oslist'].split(',')
-                                for os in oslist:
-                                    print(
-                                        "################## OS #######################")
-                                    print(os)
-                                    if (os == 'windows'):
-                                        game.os.add(
-                                            OSOptions.objects.get(os=OSOptions.WIN))
-                                    elif (os == 'macos'):
-                                        game.os.add(
-                                            OSOptions.objects.get(os=OSOptions.MAC))
-                                    else:
-                                        game.os.add(
-                                            OSOptions.objects.get(os=OSOptions.LIN))
-                                game.save()
-
-                            # Change number stuff
-                            gamechange = GameChange(
-                                change_number=change.change_number,
-                                game=game,
-                                changelog=GameChange.changelog_builder(
-                                    GameChange.ADD,
-                                    game.appid,
-                                ),
-                                action=GameChange.ADD
-                            )
-                            gamechange.save()
-
-                            print("Change Number " +
-                                  str(gamechange.change_number) + ' registered.')
-                            time.sleep(.5)
-                        else:
-                            print(
-                                '######### no common section, continue on #########')
-                            continue
+                        ProcessNewGame(client, appid, change.change_number)
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNumber = getCurrentChangeNumber()
