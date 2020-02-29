@@ -15,6 +15,7 @@ class Game(models.Model):
     logo_small = models.CharField(max_length=128, null=True)
     clienticon = models.CharField(max_length=128, null=True)
     supported_languages = models.ManyToManyField('Languages')
+    app_type = models.ManyToManyField('AppType')
 
     def __str__(self):
         return self.name
@@ -70,3 +71,10 @@ class Languages(models.Model):
 
     def __str__(self):
         return self.language
+
+
+class AppType(models.Model):
+    app_type = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.app_type

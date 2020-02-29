@@ -1,4 +1,4 @@
-from game.models import Game, GameChange, OSOptions, Languages
+from game.models import Game, GameChange, OSOptions, Languages, AppType
 from utils.GameHelpers.Client import Client
 
 
@@ -33,6 +33,13 @@ def ProcessNewGame(client, appid, changenum):
                 langGet = Languages.objects.get_or_create(
                     language=str(lang))[0]
                 game.supported_languages.add(langGet)
+            game.save()
+
+        appType = gameInfo['app_type']
+        if appType is not None:
+            typeGetOrCreate = AppType.objects.get_or_create(app_type=appType)[
+                0]
+            game.app_type.add(typeGetOrCreate)
             game.save()
 
         # OS list Stuff

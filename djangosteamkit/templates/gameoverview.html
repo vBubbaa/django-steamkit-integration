@@ -12,6 +12,8 @@
       <p>price: {{ game.price }}</p>
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
+      <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>
+      <p>Langagues Supported: {% for lang in game.supported_languages.all %}{{ lang }}, {% endfor %}</p>
       <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.icon }}.jpg" target="_blank">
           {{ game.icon }}
         </a>
@@ -26,10 +28,6 @@
       </p>
       <p>clienticon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienticon }}.ico" target="_blank">
           {{ game.clienticon }}
-        </a>
-      </p>
-      <p>clienttga: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienttga }}.jpg" target="_blank">
-          {{ game.clienttga }}
         </a>
       </p>
     </div>
