@@ -14,6 +14,8 @@
       <p>releasestate: {{ game.release_state}}</p>
       <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>
       <p>Langagues Supported: {% for lang in game.supported_languages.all %}{{ lang }}, {% endfor %}</p>
+      <p>Publishers: {% for pub in game.publisher.all %}{{ pub }}, {% endfor%}</p>
+      <p>Developers: {% for dev in game.developer.all %}{{ dev }}, {% endfor%}</p>
       <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.icon }}.jpg" target="_blank">
           {{ game.icon }}
         </a>

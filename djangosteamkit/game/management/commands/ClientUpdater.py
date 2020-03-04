@@ -1,9 +1,11 @@
+##############################################
+# This import needs to be before the other imports
+# See https://github.com/ValvePython/steam/issues/97
 import gevent
 from gevent import monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
-
-########################
+###############################################
 
 import time
 from django.core.management.base import BaseCommand, CommandError

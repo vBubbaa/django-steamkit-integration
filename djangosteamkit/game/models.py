@@ -16,6 +16,9 @@ class Game(models.Model):
     clienticon = models.CharField(max_length=128, null=True)
     supported_languages = models.ManyToManyField('Languages')
     app_type = models.ManyToManyField('AppType')
+    controller_support = models.CharField(max_length=32, null=True, blank=True)
+    developer = models.ManyToManyField('Developer')
+    publisher = models.ManyToManyField('Publisher')
 
     def __str__(self):
         return self.name
@@ -78,3 +81,17 @@ class AppType(models.Model):
 
     def __str__(self):
         return self.app_type
+
+
+class Developer(models.Model):
+    developer = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.developer
+
+
+class Publisher(models.Model):
+    publisher = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.publisher
