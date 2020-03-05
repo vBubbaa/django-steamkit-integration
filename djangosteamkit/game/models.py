@@ -19,6 +19,10 @@ class Game(models.Model):
     controller_support = models.CharField(max_length=32, null=True, blank=True)
     developer = models.ManyToManyField('Developer')
     publisher = models.ManyToManyField('Publisher')
+    primary_genre = models.ForeignKey(
+        'Genre', on_delete=models.CASCADE, related_name='primary_genre', blank=True, null=True)
+    genres = models.ManyToManyField('Genre')
+    categories = models.ManyToManyField('Category')
 
     def __str__(self):
         return self.name
@@ -95,3 +99,19 @@ class Publisher(models.Model):
 
     def __str__(self):
         return self.publisher
+
+
+class Genre(models.Model):
+    genre_id = models.IntegerField()
+    genre_description = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.genre_description
+
+
+class Category(models.Model):
+    category_id = models.IntegerField()
+    category_description = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.category_description

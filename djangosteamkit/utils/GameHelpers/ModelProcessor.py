@@ -1,5 +1,7 @@
-from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher
+from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
 from utils.GameHelpers.Client import Client
+from utils.GameHelpers.ApiToolkit import tag_request
+import sys
 
 
 def ProcessNewGame(client, appid, changenum):
@@ -22,9 +24,36 @@ def ProcessNewGame(client, appid, changenum):
             logo=gameInfo['logo'],
             logo_small=gameInfo['logo_small'],
             clienticon=gameInfo['clienticon'],
-            controller_support=gameInfo['controller_support']
+            controller_support=gameInfo['controller_support'],
         )
         game.save()
+
+        # Generate primary genre
+        pg = gameInfo['primary_genre']
+        tagList = []
+        tagList.append(pg)
+        tagRes = tag_request(str(appid), 'genres', tagList)
+
+        """
+        TODO 
+            - Get res and check if genre exists in our database
+            - if it doesnt exist create the genre and associate it with the game primary_genre
+        """
+        for item in tagRes:
+            for k, v in item.items():
+                if (k == 'id'):
+                    if Genre.objects.filter(genre_id=v).exists():
+                        game.primary_genre = Genre.objects.filter(genre_id=v)
+                    else:
+                        genre = Genre.objects.create(genre_id=v)
+                elif (k == 'description'):
+                    if not genre.genre_description:
+                        print('genre v ' + v)
+                        genre.genre_description = v
+                        genre.save()
+
+                    game.primary_genre = genre
+                game.save()
 
         # Language Stuff
         languagesRes = gameInfo['languages']
