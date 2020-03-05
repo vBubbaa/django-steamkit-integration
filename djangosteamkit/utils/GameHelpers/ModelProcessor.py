@@ -3,6 +3,14 @@ from utils.GameHelpers.Client import Client
 from utils.GameHelpers.ApiToolkit import tag_request
 import sys
 
+"""
+ProcessNewGame() function creates an app based on the Steamkit response (We dont have the app in our DB yet)
+@params:
+    - client: The steamkit client object we are using to connect to steamkit and perform steamkit actions
+    - appid: The appid of the app we are processing
+    - changenum: The changenumber of the app we are adding (this is a changenumber given by steamkit)
+"""
+
 
 def ProcessNewGame(client, appid, changenum):
     client = client
@@ -32,28 +40,31 @@ def ProcessNewGame(client, appid, changenum):
         pg = gameInfo['primary_genre']
         tagList = []
         tagList.append(pg)
+        # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
         tagRes = tag_request(str(appid), 'genres', tagList)
 
-        """
-        TODO 
-            - Get res and check if genre exists in our database
-            - if it doesnt exist create the genre and associate it with the game primary_genre
-        """
+        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
         for item in tagRes:
             for k, v in item.items():
+                # When the key is ID, check if that genre exists in our genre model
                 if (k == 'id'):
                     if Genre.objects.filter(genre_id=v).exists():
+                        # If exists, set the primary genre to that genre
                         game.primary_genre = Genre.objects.filter(genre_id=v)
                     else:
+                        # If the genre doesn't exist in our genre model, create it
                         genre = Genre.objects.create(genre_id=v)
                 elif (k == 'description'):
+                    # If the desciption for the genre is not yet set, set it and associate game with the primary genre
                     if not genre.genre_description:
                         print('genre v ' + v)
                         genre.genre_description = v
                         genre.save()
+                        game.primary_genre = genre
 
-                    game.primary_genre = genre
                 game.save()
+
+        sys.exit("Exit after genre")
 
         # Language Stuff
         languagesRes = gameInfo['languages']

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title></title>
   </head>
   <body>
@@ -13,22 +13,54 @@
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
       <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>
-      <p>Langagues Supported: {% for lang in game.supported_languages.all %}{{ lang }}, {% endfor %}</p>
-      <p>Publishers: {% for pub in game.publisher.all %}{{ pub }}, {% endfor%}</p>
-      <p>Developers: {% for dev in game.developer.all %}{{ dev }}, {% endfor%}</p>
-      <p>icon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.icon }}.jpg" target="_blank">
+      <p>
+        Langagues Supported: {% for lang in game.supported_languages.all %}{{
+        lang }}, {% endfor %}
+      </p>
+      <p>
+        Publishers: {% for pub in game.publisher.all %}{{ pub }}, {% endfor%}
+      </p>
+      <p>
+        Developers: {% for dev in game.developer.all %}{{ dev }}, {% endfor%}
+      </p>
+      <p>
+        <span>PrimaryGenre: {{ game.primary_genre.id }}: </span>
+        <span>{{game.primary_genre.genre_description}}</span>
+      </p>
+
+      <p>
+        icon:
+        <a
+          href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.icon }}.jpg"
+          target="_blank"
+        >
           {{ game.icon }}
         </a>
       </p>
-      <p>logo: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo }}.jpg" target="_blank">
+      <p>
+        logo:
+        <a
+          href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo }}.jpg"
+          target="_blank"
+        >
           {{ game.logo }}
         </a>
       </p>
-      <p>logo_small: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo_small }}.jpg" target="_blank">
+      <p>
+        logo_small:
+        <a
+          href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.logo_small }}.jpg"
+          target="_blank"
+        >
           {{ game.logo_small }}
         </a>
       </p>
-      <p>clienticon: <a href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienticon }}.ico" target="_blank">
+      <p>
+        clienticon:
+        <a
+          href="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{{ game.appid }}/{{ game.clienticon }}.ico"
+          target="_blank"
+        >
           {{ game.clienticon }}
         </a>
       </p>

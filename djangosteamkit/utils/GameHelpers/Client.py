@@ -90,6 +90,8 @@ class Client:
                 'associations', None)
             primary_genre = res['apps'][appid]['common'].get(
                 'primary_genre', None)
+            genres = res['apps'][appid]['common'].get(
+                'genres', None)
 
             # Dictionary we pass to the updater to save as values into our DB
             info = {
@@ -106,7 +108,8 @@ class Client:
                 'app_type': app_type,
                 'controller_support': controller_support,
                 'associations': associations,
-                'primary_genre': primary_genre
+                'primary_genre': primary_genre,
+                'genres': genres,
             }
 
         # If there is not information available return None
