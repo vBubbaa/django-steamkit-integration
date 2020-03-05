@@ -88,4 +88,3 @@ def tag_request(appid, tag_type, tag_ids):
 
 
 ex = tag_request('730', 'genres', ['1', '37'])
-print(ex)

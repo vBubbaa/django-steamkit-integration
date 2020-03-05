@@ -24,9 +24,10 @@
         Developers: {% for dev in game.developer.all %}{{ dev }}, {% endfor%}
       </p>
       <p>
-        <span>PrimaryGenre: {{ game.primary_genre.id }}: </span>
+        <span>PrimaryGenre: {{ game.primary_genre.genre_id }}: </span>
         <span>{{game.primary_genre.genre_description}}</span>
       </p>
+      <p>Genres: {% for genre in game.genres.all %}<span>{{ genre.genre_description }}, </span>{% endfor %}</p>
 
       <p>
         icon:
