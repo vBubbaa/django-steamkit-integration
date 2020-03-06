@@ -100,6 +100,16 @@ class Client:
                 'metacritic_score', None)
             metacritic_fullurl = res['apps'][appid]['common'].get(
                 'metacritic_fullurl', None)
+            community_visible_stats = res['apps'][appid]['common'].get(
+                'community_visible_stats', None)
+            workshop_visible = res['apps'][appid]['common'].get(
+                'workshop_visible', None)
+            community_hub_visible = res['apps'][appid]['common'].get(
+                'community_hub_visible', None)
+            review_score = res['apps'][appid]['common'].get(
+                'review_score', None)
+            review_percentage = res['apps'][appid]['common'].get(
+                'review_percentage', None)
 
             # Dictionary we pass to the updater to save as values into our DB
             info = {
@@ -122,6 +132,11 @@ class Client:
                 'steam_release_date': steam_release_date,
                 'metacritic_score': metacritic_score,
                 'metacritic_fullurl': metacritic_fullurl,
+                'community_visible_stats': community_visible_stats,
+                'workshop_visible': workshop_visible,
+                'community_hub_visible': community_hub_visible,
+                'review_score': review_score,
+                'review_percentage': review_percentage
             }
 
         # If there is not information available return None

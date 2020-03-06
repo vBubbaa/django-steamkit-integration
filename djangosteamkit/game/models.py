@@ -26,6 +26,11 @@ class Game(models.Model):
     steam_release_date = models.CharField(max_length=64, null=True)
     metacritic_score = models.CharField(max_length=264, null=True)
     metacritic_fullurl = models.URLField(null=True)
+    community_visible_stats = models.BooleanField(null=True)
+    workshop_visible = models.BooleanField(null=True)
+    community_hub_visible = models.BooleanField(null=True)
+    review_score = models.IntegerField(null=True)
+    review_percentage = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name

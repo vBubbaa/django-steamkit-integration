@@ -36,6 +36,12 @@ def ProcessNewGame(client, appid, changenum):
             steam_release_date=gameInfo['steam_release_date'],
             metacritic_score=gameInfo['metacritic_score'],
             metacritic_fullurl=gameInfo['metacritic_fullurl'],
+            community_visible_stats=boolify(
+                gameInfo['community_visible_stats']),
+            workshop_visible=boolify(gameInfo['workshop_visible']),
+            community_hub_visible=boolify(gameInfo['community_hub_visible']),
+            review_score=int(gameInfo['review_score']),
+            review_percentage=int(gameInfo['review_percentage'])
         )
         game.save()
 
@@ -205,3 +211,13 @@ def ProcessNewGame(client, appid, changenum):
 def ProcessExistingGame(client, appid):
     client = client
     appid = appid
+
+
+# Steam bool res fields return a string of 1 or 0, so this just returns a boolean representation of that
+
+
+def boolify(num):
+    if num == '1':
+        return True
+    else:
+        return False
