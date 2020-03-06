@@ -92,6 +92,14 @@ class Client:
                 'primary_genre', None)
             genres = res['apps'][appid]['common'].get(
                 'genres', None)
+            category = res['apps'][appid]['common'].get(
+                'category', None)
+            steam_release_date = res['apps'][appid]['common'].get(
+                'steam_release_date', None)
+            metacritic_score = res['apps'][appid]['common'].get(
+                'metacritic_score', None)
+            metacritic_fullurl = res['apps'][appid]['common'].get(
+                'metacritic_fullurl', None)
 
             # Dictionary we pass to the updater to save as values into our DB
             info = {
@@ -110,6 +118,10 @@ class Client:
                 'associations': associations,
                 'primary_genre': primary_genre,
                 'genres': genres,
+                'category': category,
+                'steam_release_date': steam_release_date,
+                'metacritic_score': metacritic_score,
+                'metacritic_fullurl': metacritic_fullurl,
             }
 
         # If there is not information available return None

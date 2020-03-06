@@ -33,8 +33,40 @@ def ProcessNewGame(client, appid, changenum):
             logo_small=gameInfo['logo_small'],
             clienticon=gameInfo['clienticon'],
             controller_support=gameInfo['controller_support'],
+            steam_release_date=gameInfo['steam_release_date'],
+            metacritic_score=gameInfo['metacritic_score'],
+            metacritic_fullurl=gameInfo['metacritic_fullurl'],
         )
         game.save()
+
+        # Generate all categories related to the app
+        categories = gameInfo['category']
+        catList = []
+        for cat in categories:
+            catList.append(cat.split('_')[1])
+        catRes = tag_request(str(appid), 'categories', catList)
+
+        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+        for item in catRes:
+            for k, v in item.items():
+                # When the key is ID, check if that genre exists in our genre model
+                if (k == 'id'):
+                    if Category.objects.filter(category_id=v).exists():
+                        category = Category.objects.get(category_id=v)
+                        # If exists, associate the game to that genre
+                        game.categories.add(category)
+                    else:
+                        # If the genre doesn't exist in our genre model, create it
+                        category = Category.objects.create(category_id=v)
+                elif (k == 'description'):
+                    # If the desciption for the genre is not yet set, set it and associate game with the genre
+                    if not category.category_description:
+                        print('genre v ' + v)
+                        category.category_description = v
+                        category.save()
+                        game.categories.add(category)
+
+                game.save()
 
         # Generate all genres related to the app
         tags = gameInfo['genres']
@@ -42,7 +74,6 @@ def ProcessNewGame(client, appid, changenum):
         for tag in tags.items():
             tagList.append(tag[1])
         tagRes = tag_request(str(appid), 'genres', tagList)
-        print(tagRes)
 
         # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
         for item in tagRes:
@@ -93,8 +124,6 @@ def ProcessNewGame(client, appid, changenum):
                         game.primary_genre = genre
 
                 game.save()
-
-        sys.exit("Exit after genre")
 
         # Language Stuff
         languagesRes = gameInfo['languages']

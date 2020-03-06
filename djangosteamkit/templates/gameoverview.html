@@ -13,10 +13,16 @@
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
       <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>
-      <p>
-        Langagues Supported: {% for lang in game.supported_languages.all %}{{
-        lang }}, {% endfor %}
-      </p>
+      <p>Release Date: {{ game.steam_release_date }}</p>
+      <p>metacritic score: {{ game.metacritic_score }}</p>
+      <p>metacritic url: <a href="{{ game.metacritic_fullurl }}">{{ game.metacritic_fullurl }}</a></p>
+
+      Languages Supported: 
+      {% for lang in game.supported_languages.all %}
+      <span>
+      {{ lang }} 
+      </span>
+      {% endfor %}
       <p>
         Publishers: {% for pub in game.publisher.all %}{{ pub }}, {% endfor%}
       </p>
@@ -28,7 +34,7 @@
         <span>{{game.primary_genre.genre_description}}</span>
       </p>
       <p>Genres: {% for genre in game.genres.all %}<span>{{ genre.genre_description }}, </span>{% endfor %}</p>
-
+      <p>Categories: {% for category in game.categories.all %}<span>{{ category.category_description }}, </span>{% endfor %}</p>
       <p>
         icon:
         <a

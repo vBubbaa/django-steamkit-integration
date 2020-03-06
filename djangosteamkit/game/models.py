@@ -23,6 +23,9 @@ class Game(models.Model):
         'Genre', on_delete=models.CASCADE, related_name='primary_genre', blank=True, null=True)
     genres = models.ManyToManyField('Genre')
     categories = models.ManyToManyField('Category')
+    steam_release_date = models.CharField(max_length=64, null=True)
+    metacritic_score = models.CharField(max_length=264, null=True)
+    metacritic_fullurl = models.URLField(null=True)
 
     def __str__(self):
         return self.name

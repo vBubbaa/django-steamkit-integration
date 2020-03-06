@@ -69,7 +69,7 @@ def tag_request(appid, tag_type, tag_ids):
             # For key and value in items (ex. 'id': 1, 'description': 'Action')
             for k, v in item.items():
                 # If the key is 'id' (not description) append the entire dict back (which contains description)
-                if (k == 'id' and v == tag):
+                if (k == 'id' and str(v) == tag):
                     returnList.append(item)
 
     # Return Fomrat (list of dicts with the id and description):
