@@ -1,9 +1,12 @@
 from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
 from utils.GameHelpers.Client import Client
 from utils.GameHelpers.ApiToolkit import tag_request
-import sys
 from datetime import datetime
 from django.utils.timezone import make_aware
+from django.utils.text import slugify
+
+import sys
+
 
 """
 ProcessNewGame() function creates an app based on the Steamkit response (We dont have the app in our DB yet)
@@ -29,7 +32,7 @@ def ProcessNewGame(client, appid, changenum):
             name=gameInfo['name'],
             slug=gameInfo['slug'],
             price=gameInfo['price'],
-            release_state=gameInfo['releasestate'],
+            release_state=gameInfo['release_state'],
             icon=gameInfo['icon'],
             logo=gameInfo['logo'],
             logo_small=gameInfo['logo_small'],
@@ -210,10 +213,82 @@ def ProcessNewGame(client, appid, changenum):
             '######### no common section, continue on #########')
 
 
-def ProcessExistingGame(client, appid):
+"""
+ProcessExistingGame() is called on an app when a change is read through steamkit and the appid already
+exists in our DB
+
+@params:
+    - client: The client instance we are connected to steamkit with
+    - appid: The appid of the app we need to check for changes
+"""
+
+
+def ProcessExistingGame(client, appid, changenum):
     client = client
     appid = appid
+    changenum = changenum
 
+    # Grab the game info from the Client
+    gameInfo = client.get_all_product_info(appid)
+
+    # Grab the game object we are checking for changes on
+    game = Game.objects.get(appid=appid)
+
+    # Fields we can check by simply comparing strings (ex. NOT fields with relationships [fk, m2m])
+    easyFieldChecks = [
+        'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support'
+    ]
+
+    # For each easily checkable field, run compareCharField()
+    for field in easyFieldChecks:
+        if gameInfo[field] is not None:
+            compareCharField(
+                getattr(game, field),
+                gameInfo[field],
+                game,
+                field,
+                changenum
+            )
+        else:
+            pass
+
+
+""" 
+Compares two charfields and checks if there is a difference (used to check game fields that aren't tied with fk's or m2m relationships)
+@params:
+    - currentVal: Current val stored in db
+    - steamkitVal: Value returned from steamkit (current)
+    - game: game object which we are checking
+    - db_field_name: field of the object we are checking (ex. name, releasestate, etc.)
+    - changenum: the changenumber we are working on (returned from steamkit)
+"""
+
+
+def compareCharField(currentVal, steamkitVal, game, db_field_name, changenum):
+    # If the chars are equal, no change has happened so return None
+    if str(currentVal) == str(steamkitVal):
+        print('No change for field: ' + db_field_name)
+        pass
+    # Else, a change did occur for a field so return the new val so we can set it in our DB
+    else:
+        # TODO
+        # Actually change the field value
+        setattr(game, db_field_name, steamkitVal)
+        game.save()
+
+        payload = str(db_field_name) + ' updated: ' + \
+            str(currentVal) + ' => ' + str(steamkitVal)
+        gameChange = GameChange(
+            change_number=changenum,
+            game=game,
+            changelog=GameChange.changelog_builder(
+                GameChange.UPDATE,
+                game.appid,
+                payload=payload
+            ),
+            action=GameChange.UPDATE
+        )
+        gameChange.save()
 
 # Steam bool res fields return a string of 1 or 0, so this just returns a boolean representation of that
 

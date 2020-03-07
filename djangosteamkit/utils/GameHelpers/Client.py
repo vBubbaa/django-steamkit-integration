@@ -117,7 +117,7 @@ class Client:
                 'slug': slugify(res['apps'][appid]['common']['name'], allow_unicode=True),
                 'price': price,
                 'oslist': oslist,
-                'releasestate': releasestate,
+                'release_state': releasestate,
                 'icon': icon,
                 'logo': logo,
                 'logo_small': logo_small,

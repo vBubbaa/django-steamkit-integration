@@ -19,7 +19,7 @@
     <div>
       {% for change in changelog %}
         <div>
-          {% if change.action == 'ADD' %}<i class="fas fa-plus-circle"></i> {% else %}<i class="fas fa-wrench"></i> {% endif %}{{ change.change_number }} {{ change.action }} for app <a href="{% url 'game:gameoverview' change.game.appid change.game.slug %}">{{ change.game.name }} </a>{{change.created_time|naturaltime}}
+          {% if change.action == 'ADD' %}<i class="fas fa-plus-circle"></i> {% else %}<i class="fas fa-wrench"></i> {% endif %}{{ change.change_number }} for <a href="{% url 'game:gameoverview' change.game.appid change.game.slug %}">{{ change.game.name }} </a>{{change.changelog}} {{change.created_time|naturaltime}}
         </div>
       {% endfor %}
     </div>
