@@ -16,11 +16,11 @@
       <p>Release Date: {{ game.steam_release_date }}</p>
       <p>metacritic score: {{ game.metacritic_score }}</p>
       <p>metacritic url: <a href="{{ game.metacritic_fullurl }}">{{ game.metacritic_fullurl }}</a></p>
-      <p>metacritic score: {{ game.community_visible_stats }}</p>
-      <p>metacritic score: {{ game.workshop_visible }}</p>
-      <p>metacritic score: {{ game.community_hub_visible }}</p>
-      <p>metacritic score: {{ game.review_score }}</p>
-      <p>metacritic score: {{ game.review_percentage }}</p>
+      <p>community_visible_stats: {{ game.community_visible_stats }}</p>
+      <p>workshop_visible: {{ game.workshop_visible }}</p>
+      <p>community_hub_visible: {{ game.community_hub_visible }}</p>
+      <p>review_score: {{ game.review_score }}</p>
+      <p>review_percentage: {{ game.review_percentage }}</p>
 
       Languages Supported: 
       {% for lang in game.supported_languages.all %}
