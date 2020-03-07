@@ -236,7 +236,7 @@ def ProcessExistingGame(client, appid, changenum):
 
     # Fields we can check by simply comparing strings (ex. NOT fields with relationships [fk, m2m])
     easyFieldChecks = [
-        'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support'
+        'name', 'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support'
     ]
 
     # For each easily checkable field, run compareCharField()
@@ -271,9 +271,10 @@ def compareCharField(currentVal, steamkitVal, game, db_field_name, changenum):
         pass
     # Else, a change did occur for a field so return the new val so we can set it in our DB
     else:
-        # TODO
-        # Actually change the field value
         setattr(game, db_field_name, steamkitVal)
+        # If the name field changed, we also need to reslug our object to reflect the new name
+        if db_field_name == 'name':
+            game.slug = slugify(steamkitVal, allow_unicode=True)
         game.save()
 
         payload = str(db_field_name) + ' updated: ' + \
