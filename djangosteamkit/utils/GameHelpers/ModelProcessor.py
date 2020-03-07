@@ -2,6 +2,8 @@ from game.models import Game, GameChange, OSOptions, Languages, AppType, Develop
 from utils.GameHelpers.Client import Client
 from utils.GameHelpers.ApiToolkit import tag_request
 import sys
+from datetime import datetime
+from django.utils.timezone import make_aware
 
 """
 ProcessNewGame() function creates an app based on the Steamkit response (We dont have the app in our DB yet)
@@ -33,7 +35,7 @@ def ProcessNewGame(client, appid, changenum):
             logo_small=gameInfo['logo_small'],
             clienticon=gameInfo['clienticon'],
             controller_support=gameInfo['controller_support'],
-            steam_release_date=gameInfo['steam_release_date'],
+            steam_release_date=epochToDateTime(gameInfo['steam_release_date']),
             metacritic_score=gameInfo['metacritic_score'],
             metacritic_fullurl=gameInfo['metacritic_fullurl'],
             community_visible_stats=boolify(
@@ -221,3 +223,12 @@ def boolify(num):
         return True
     else:
         return False
+
+# Release dates are returned as epochs, so this converts it to a django friendly datetime format
+
+
+def epochToDateTime(timestamp):
+    if timestamp is not None:
+        return make_aware(datetime.fromtimestamp(int(timestamp)))
+    else:
+        return None
