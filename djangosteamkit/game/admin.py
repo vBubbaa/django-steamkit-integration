@@ -1,5 +1,5 @@
 from django.contrib import admin
-from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
+from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category, Price
 
 admin.site.register(Game)
 admin.site.register(GameChange)
@@ -10,3 +10,4 @@ admin.site.register(Developer)
 admin.site.register(Publisher)
 admin.site.register(Genre)
 admin.site.register(Category)
+admin.site.register(Price)

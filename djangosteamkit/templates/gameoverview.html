@@ -9,7 +9,17 @@
       <p>name: {{ game.name }}</p>
       <p>appid: {{ game.appid }}</p>
       <p>slug: {{ game.slug }}</p>
-      <p>price: {{ game.price }}</p>
+      <p>price: {{ game.current_price.price }}</p>
+      <div>
+        !-- Price History --!
+        {% for price in game.prices.all %}
+          <div>
+            <span>Price: {{ price.price }}</span>
+            <span>Date: {{ price.date }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <hr />
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
       <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>

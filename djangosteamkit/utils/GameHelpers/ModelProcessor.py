@@ -1,4 +1,4 @@
-from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
+from game.models import Game, GameChange, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category, Price
 from utils.GameHelpers.Client import Client
 from utils.GameHelpers.ApiToolkit import tag_request
 from datetime import datetime
@@ -31,7 +31,6 @@ def ProcessNewGame(client, appid, changenum):
             appid=appid,
             name=gameInfo['name'],
             slug=gameInfo['slug'],
-            price=gameInfo['price'],
             release_state=gameInfo['release_state'],
             icon=gameInfo['icon'],
             logo=gameInfo['logo'],
@@ -48,6 +47,15 @@ def ProcessNewGame(client, appid, changenum):
             review_score=int(gameInfo['review_score']),
             review_percentage=int(gameInfo['review_percentage'])
         )
+        game.save()
+
+        # Generate new price instance and set the recieved price to the apps current price
+        price = Price(
+            price=gameInfo['price']
+        )
+        price.save()
+        game.prices.add(price)
+        game.current_price = price
         game.save()
 
         # Generate all categories related to the app
@@ -251,6 +259,15 @@ def ProcessExistingGame(client, appid, changenum):
             )
         else:
             pass
+
+    if gameInfo['price'] != game.current_price.price:
+        price = Price(
+            price=gameInfo['price']
+        )
+        price.save()
+        game.prices.add(price)
+        game.current_price = price
+        game.save()
 
 
 """ 

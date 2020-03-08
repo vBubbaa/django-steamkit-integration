@@ -6,29 +6,46 @@ class Game(models.Model):
     appid = models.IntegerField()
     name = models.CharField(max_length=264)
     slug = models.SlugField()
-    # Get price from API (apitoolkit.py)
-    price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+    # All price changes are stored in 'Price' model so we can view the price history
+    prices = models.ManyToManyField('Price')
+    # The current price of the app
+    current_price = models.ForeignKey(
+        'Price', on_delete=models.CASCADE, related_name='current_price', blank=True, null=True)
+    # Supported OS' [choose from 'windows', 'macos', and 'linux']
     os = models.ManyToManyField('OSOptions')
+    # Release state of the game (ex. released, pre-release, etc.)
     release_state = models.CharField(max_length=32, null=True)
+    # Image stuff that points to the image url on steams domain
     icon = models.CharField(max_length=128, null=True)
     logo = models.CharField(max_length=128, null=True)
     logo_small = models.CharField(max_length=128, null=True)
     clienticon = models.CharField(max_length=128, null=True)
+    # Languages supported by the app
     supported_languages = models.ManyToManyField('Languages')
+    # Type of app (game, dlc, etc.)
     app_type = models.ManyToManyField('AppType')
+    # Does the game support controllers? (full, partial, etc)
     controller_support = models.CharField(max_length=32, null=True, blank=True)
+    # Developer and publishers (if applicable)
     developer = models.ManyToManyField('Developer')
     publisher = models.ManyToManyField('Publisher')
+    # Main genre for the app
     primary_genre = models.ForeignKey(
         'Genre', on_delete=models.CASCADE, related_name='primary_genre', blank=True, null=True)
+    # All genre relating to the app
     genres = models.ManyToManyField('Genre')
+    # Categories relating to the app
     categories = models.ManyToManyField('Category')
+    # Release date converted from epoch to django datetimefield format
     steam_release_date = models.DateTimeField(null=True)
+    # Metacritic stuff
     metacritic_score = models.CharField(max_length=264, null=True)
     metacritic_fullurl = models.URLField(null=True)
+    # Other T/F fields
     community_visible_stats = models.BooleanField(null=True)
     workshop_visible = models.BooleanField(null=True)
     community_hub_visible = models.BooleanField(null=True)
+    # Review stuff
     review_score = models.IntegerField(null=True)
     review_percentage = models.IntegerField(null=True)
 
@@ -60,6 +77,14 @@ class GameChange(models.Model):
         else:
             changelog = str(action) + ' ' + str(appid) + ' to the database'
         return changelog
+
+
+class Price(models.Model):
+    price = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return str(self.price)
 
 
 class OSOptions(models.Model):
