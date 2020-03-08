@@ -288,6 +288,75 @@ def ProcessExistingGame(client, appid, changenum):
         game.current_price = price
         game.save()
 
+    # OS list Stuff
+    oslist = gameInfo['oslist']
+    print('OSLIST@@@@@@@@@@@@@@@@@@@@@@@ ' + str(oslist))
+    if oslist is not None:
+        osUpdated = False
+        # If there is an OSList, split the list by ',' delimiter
+        oslist = oslist.split(',')
+        # For each of those OS', check for their type and add them to the model
+        for os in oslist:
+            print(
+                "################## OS #######################")
+            print(os)
+            if (os == 'windows'):
+                if game.os.filter(os=OSOptions.WIN).exists():
+                    pass
+                else:
+                    os = OSOptions.objects.get(os=OSOptions.WIN)
+                    game.os.add(os)
+                    osUpdated = True
+            elif (os == 'macos'):
+                if game.os.filter(os=OSOptions.MAC).exists():
+                    pass
+                else:
+                    os = OSOptions.objects.get(os=OSOptions.MAC)
+                    game.os.add(os)
+                    osUpdated = True
+            else:
+                if game.os.filter(os=OSOptions.LIN).exists():
+                    pass
+                else:
+                    os = OSOptions.objects.get(os=OSOptions.LIN)
+                    game.os.add(os)
+                    osUpdated = True
+        game.save()
+
+        if 'windows' not in oslist and game.os.filter(os=OSOptions.WIN).exists():
+            print('windows no longer supported')
+            os = OSOptions.objects.get(os=OSOptions.WIN)
+            game.os.remove(os)
+            game.save()
+            osUpdated = True
+
+        if 'macos' not in oslist and game.os.filter(os=OSOptions.MAC).exists():
+            print('macos no longer supported')
+            os = OSOptions.objects.get(os=OSOptions.MAC)
+            game.os.remove(os)
+            game.save()
+            osUpdated = True
+
+        if 'linux' not in oslist and game.os.filter(os=OSOptions.LIN).exists():
+            print('linux no longer supported')
+            os = OSOptions.objects.get(os=OSOptions.LIN)
+            game.os.remove(os)
+            game.save()
+            osUpdated = True
+
+        if osUpdated:
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload='OS options updated'
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
+
     # Language Stuff
     languagesRes = gameInfo['languages']
     langResCompare = []
@@ -304,6 +373,19 @@ def ProcessExistingGame(client, appid, changenum):
                 game.supported_languages.add(langGet)
                 game.save()
 
+                payload = 'Added ' + lang + ' to ' + game.name + ' supported languages.'
+                gameChange = GameChange(
+                    change_number=changenum,
+                    game=game,
+                    changelog=GameChange.changelog_builder(
+                        GameChange.UPDATE,
+                        game.appid,
+                        payload=payload
+                    ),
+                    action=GameChange.UPDATE
+                )
+                gameChange.save()
+
     # Remove any languages that are no longer supported
     print(str(langResCompare))
     for lang in game.supported_languages.all():
@@ -311,7 +393,21 @@ def ProcessExistingGame(client, appid, changenum):
             print(lang.language + ' is in the response')
         else:
             print(lang.language + ' is not in response. Removing from DB')
-            lang.delete()
+            game.supported_languages.remove(lang)
+
+            payload = 'Deleted ' + lang.language + \
+                ' from ' + game.name + ' supported languages.'
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
 
 
 """ 
