@@ -288,6 +288,31 @@ def ProcessExistingGame(client, appid, changenum):
         game.current_price = price
         game.save()
 
+    # Language Stuff
+    languagesRes = gameInfo['languages']
+    langResCompare = []
+    # Check that all languages from steamkit res are saved to our db / associated to our game
+    if languagesRes is not None:
+        for lang in languagesRes.keys():
+            langResCompare.append(lang)
+            if game.supported_languages.filter(language=lang).exists():
+                print(lang + ' is already in the db')
+            else:
+                print(lang + ' is not in the DB. Adding to the DB...')
+                langGet = Languages.objects.get_or_create(
+                    language=str(lang))[0]
+                game.supported_languages.add(langGet)
+                game.save()
+
+    # Remove any languages that are no longer supported
+    print(str(langResCompare))
+    for lang in game.supported_languages.all():
+        if lang.language in langResCompare:
+            print(lang.language + ' is in the response')
+        else:
+            print(lang.language + ' is not in response. Removing from DB')
+            lang.delete()
+
 
 """ 
 Compares two charfields and checks if there is a difference (used to check game fields that aren't tied with fk's or m2m relationships)
