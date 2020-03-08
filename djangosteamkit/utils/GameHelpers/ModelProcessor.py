@@ -244,8 +244,12 @@ def ProcessExistingGame(client, appid, changenum):
 
     # Fields we can check by simply comparing strings (ex. NOT fields with relationships [fk, m2m])
     easyFieldChecks = [
-        'name', 'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support'
+        'name', 'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support',
+        'metacritic_score', 'metacritic_fullurl', 'review_score', 'review_percentage'
     ]
+
+    boolFieldChecks = ['community_visible_stats',
+                       'workshop_visible', 'community_hub_visible']
 
     # For each easily checkable field, run compareCharField()
     for field in easyFieldChecks:
@@ -260,6 +264,21 @@ def ProcessExistingGame(client, appid, changenum):
         else:
             pass
 
+    # For each bool field, run compareBoolField()
+    for field in boolFieldChecks:
+        if gameInfo[field] is not None:
+            compareBoolField(
+                getattr(game, field),
+                gameInfo[field],
+                game,
+                field,
+                changenum
+            )
+        else:
+            pass
+
+    # If the price has changed create a new price instance and associate it with the game
+    # Set the current price to the recent price we just made
     if gameInfo['price'] != game.current_price.price:
         price = Price(
             price=gameInfo['price']
@@ -296,6 +315,33 @@ def compareCharField(currentVal, steamkitVal, game, db_field_name, changenum):
 
         payload = str(db_field_name) + ' updated: ' + \
             str(currentVal) + ' => ' + str(steamkitVal)
+        gameChange = GameChange(
+            change_number=changenum,
+            game=game,
+            changelog=GameChange.changelog_builder(
+                GameChange.UPDATE,
+                game.appid,
+                payload=payload
+            ),
+            action=GameChange.UPDATE
+        )
+        gameChange.save()
+
+# Same as ^ except its built for boolean fields
+
+
+def compareBoolField(currentVal, steamkitVal, game, db_field_name, changenum):
+    # If the chars are equal, no change has happened so return None
+    if bool(currentVal) == bool(steamkitVal):
+        print('No change for field: ' + db_field_name)
+        pass
+    # Else, a change did occur for a field so return the new val so we can set it in our DB
+    else:
+        setattr(game, db_field_name, steamkitVal)
+        game.save()
+
+        payload = str(db_field_name) + ' updated: ' + \
+            str(bool(currentVal)) + ' => ' + str(bool(steamkitVal))
         gameChange = GameChange(
             change_number=changenum,
             game=game,
