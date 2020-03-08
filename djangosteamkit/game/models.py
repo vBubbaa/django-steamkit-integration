@@ -23,7 +23,8 @@ class Game(models.Model):
     # Languages supported by the app
     supported_languages = models.ManyToManyField('Languages')
     # Type of app (game, dlc, etc.)
-    app_type = models.ManyToManyField('AppType')
+    app_type = models.ForeignKey(
+        'AppType', on_delete=models.CASCADE, related_name='type', blank=True, null=True)
     # Does the game support controllers? (full, partial, etc)
     controller_support = models.CharField(max_length=32, null=True, blank=True)
     # Developer and publishers (if applicable)

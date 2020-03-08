@@ -158,7 +158,7 @@ def ProcessNewGame(client, appid, changenum):
         if appType is not None:
             typeGetOrCreate = AppType.objects.get_or_create(app_type=appType)[
                 0]
-            game.app_type.add(typeGetOrCreate)
+            game.app_type = typeGetOrCreate
             game.save()
 
         # OS list Stuff
@@ -287,6 +287,42 @@ def ProcessExistingGame(client, appid, changenum):
         game.prices.add(price)
         game.current_price = price
         game.save()
+
+        payload = 'Updated app price to: ' + str(game.current_price.price)
+        gameChange = GameChange(
+            change_number=changenum,
+            game=game,
+            changelog=GameChange.changelog_builder(
+                GameChange.UPDATE,
+                game.appid,
+                payload=payload
+            ),
+            action=GameChange.UPDATE
+        )
+        gameChange.save()
+
+    # App Type
+    appType = gameInfo['app_type']
+    if appType is not None:
+        typeGetOrCreate = AppType.objects.get_or_create(app_type=appType)[
+            0]
+        if game.app_type.app_type != appType:
+            print('app type has changed')
+            game.app_type = typeGetOrCreate
+            game.save()
+
+            payload = 'Updated app type to: ' + str(game.app_type.app_type)
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
 
     # OS list Stuff
     oslist = gameInfo['oslist']

@@ -22,7 +22,7 @@
       <hr />
       <p>oslist: {% for o in game.os.all %}{{ o }}{% endfor %}</p>
       <p>releasestate: {{ game.release_state}}</p>
-      <p>Type: {% for type in game.app_type.all %}{{ type }}{% endfor %}</p>
+      <p>Type: {{ game.app_type.app_type }}</p>
       <p>Release Date: {{ game.steam_release_date }}</p>
       <p>metacritic score: {{ game.metacritic_score }}</p>
       <p>metacritic url: <a href="{{ game.metacritic_fullurl }}">{{ game.metacritic_fullurl }}</a></p>
