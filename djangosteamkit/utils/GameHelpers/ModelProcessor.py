@@ -301,6 +301,100 @@ def ProcessExistingGame(client, appid, changenum):
         )
         gameChange.save()
 
+    # Generate all categories related to the app
+    categories = gameInfo['category']
+    catList = []
+    for cat in categories:
+        catList.append(cat.split('_')[1])
+    catRes = tag_request(str(appid), 'categories', catList)
+    catList = []
+
+    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+    for item in catRes:
+        for k, v in item.items():
+            # When the key is ID, check if that genre exists in our genre model
+            if (k == 'id'):
+                if Category.objects.filter(category_id=v).exists():
+                    category = Category.objects.get(category_id=v)
+                    # Check if category is associated with the game
+                    if game.categories.filter(category_id=v).exists():
+                        print('Category is already assocated with the game')
+                    else:
+                        game.categories.add(category)
+                        payload = 'Added ' + category.category_description + \
+                            ' to ' + game.name + '\'s categories'
+                        gameChange = GameChange(
+                            change_number=changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
+                else:
+                    # If the genre doesn't exist in our genre model, create it
+                    category = Category.objects.create(category_id=v)
+            elif (k == 'description'):
+                # If the desciption for the genre is not yet set, set it and associate game with the genre
+                if not category.category_description:
+                    print('category v ' + v)
+                    category.category_description = v
+                    category.save()
+
+                    payload = 'Added ' + category.category_description + ' category to the database'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
+                    game.categories.add(category)
+
+                    payload = 'Added ' + category.category_description + \
+                        ' to ' + game.name + '\'s categories'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
+            catList.append(category.category_description)
+
+            game.save()
+
+    for category in game.categories.all():
+        if category.category_description not in catList:
+            game.categories.remove(category)
+
+            payload = 'Removed ' + category.category_description + \
+                ' from ' + game.name + '\'s categories'
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
+
     # Generate all genres related to the app
     tags = gameInfo['genres']
     tagList = []
