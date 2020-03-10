@@ -301,6 +301,50 @@ def ProcessExistingGame(client, appid, changenum):
         )
         gameChange.save()
 
+    # Associations (publishers and developers for a given game)
+    assoc = gameInfo['associations']
+    devList = []
+    pubList = []
+    print('associations')
+    if assoc is not None:
+        # Loop through each association  through .values()
+        for a in assoc.values():
+            # If type is developer, either get the existing developer from our model or create one and associate it with our game
+            if a['type'] == 'developer':
+                devList.append(a['name'])
+                if game.developer.filter(developer=a['name']).exists():
+                    print(a['name'] + ' is already in the db')
+                else:
+                    print(a['name'] + ' is not in the DB. Adding to the DB...')
+                    devGet = Developer.objects.get_or_create(
+                        developer=str(a['name']))[0]
+                    game.developer.add(devGet)
+                    game.save()
+                devList.append(a['name'])
+            # If type is publisher, either get the existing publisher from our model or create one and associate it with our game
+            else:
+                pubList.append(a['name'])
+                if game.publisher.filter(publisher=a['name']).exists():
+                    print(a['name'] + ' is already in the db')
+                else:
+                    print(a['name'] + ' is not in the DB. Adding to the DB...')
+                    devGet = Publisher.objects.get_or_create(
+                        publisher=str(a['name']))[0]
+                    game.publisher.add(devGet)
+                    game.save()
+                pubList.append(a['name'])
+        game.save()
+
+    for dev in game.developer.all():
+        if dev.developer not in devList:
+            game.developer.remove(dev)
+            print('removed develoepr: ' + dev.developer + ' from ' + game.name)
+
+    for pub in game.publisher.all():
+        if pub.publisher not in pubList:
+            game.publisher.remove(pub)
+            print('removed publisher: ' + pub.publisher + ' from ' + game.name)
+
     # App Type
     appType = gameInfo['app_type']
     if appType is not None:
