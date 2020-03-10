@@ -303,6 +303,7 @@ def ProcessExistingGame(client, appid, changenum):
 
     # Associations (publishers and developers for a given game)
     assoc = gameInfo['associations']
+    # Lists we will use to see if anything has been removed from the game we stored in our DB
     devList = []
     pubList = []
     print('associations')
@@ -320,7 +321,22 @@ def ProcessExistingGame(client, appid, changenum):
                         developer=str(a['name']))[0]
                     game.developer.add(devGet)
                     game.save()
+
+                    payload = 'Added ' + devGet.developer + ' to ' + game.name + ' developers.'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
                 devList.append(a['name'])
+
             # If type is publisher, either get the existing publisher from our model or create one and associate it with our game
             else:
                 pubList.append(a['name'])
@@ -328,22 +344,60 @@ def ProcessExistingGame(client, appid, changenum):
                     print(a['name'] + ' is already in the db')
                 else:
                     print(a['name'] + ' is not in the DB. Adding to the DB...')
-                    devGet = Publisher.objects.get_or_create(
+                    pubGet = Publisher.objects.get_or_create(
                         publisher=str(a['name']))[0]
-                    game.publisher.add(devGet)
+                    game.publisher.add(pubGet)
                     game.save()
+
+                    payload = 'Added ' + pubGet.publisher + ' to ' + game.name + ' publishers.'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
                 pubList.append(a['name'])
         game.save()
 
     for dev in game.developer.all():
         if dev.developer not in devList:
             game.developer.remove(dev)
-            print('removed develoepr: ' + dev.developer + ' from ' + game.name)
+
+            payload = 'Removed ' + dev.developer + ' from ' + game.name + '\'s developers.'
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
 
     for pub in game.publisher.all():
         if pub.publisher not in pubList:
             game.publisher.remove(pub)
-            print('removed publisher: ' + pub.publisher + ' from ' + game.name)
+
+            payload = 'Removed ' + pub.publisher + ' from ' + game.name + '\'s publishers.'
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
 
     # App Type
     appType = gameInfo['app_type']
