@@ -301,6 +301,65 @@ def ProcessExistingGame(client, appid, changenum):
         )
         gameChange.save()
 
+    # Generate primary genre
+    pg = gameInfo['primary_genre']
+    tagList = []
+    tagList.append(pg)
+    # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
+    tagRes = tag_request(str(appid), 'genres', tagList)
+
+    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+    for item in tagRes:
+        for k, v in item.items():
+            # When the key is ID, check if that genre exists in our genre model
+            if (k == 'id'):
+                if Genre.objects.filter(genre_id=v).exists():
+                    genre = Genre.objects.get(genre_id=v)
+                    # Check if game primary genre is up to date with the res primary genre
+                    if game.primary_genre == genre:
+                        print('primary genre up to date')
+                    else:
+                        game.primary_genre = genre
+
+                        payload = 'Updated ' + game.name + \
+                            '\'s primary genre to ' + genre.genre_description
+                        gameChange = GameChange(
+                            change_number=changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
+                else:
+                    # If the genre doesn't exist in our genre model, create it
+                    genre = Genre.objects.create(genre_id=v)
+            elif (k == 'description'):
+                # If the desciption for the genre is not yet set, set it and associate game with the primary genre
+                if not genre.genre_description:
+                    genre.genre_description = v
+                    genre.save()
+                    game.primary_genre = genre
+
+                    payload = 'Updated ' + game.name + \
+                        '\'s primary genre to ' + genre.genre_description
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
+            game.save()
+
     # Associations (publishers and developers for a given game)
     assoc = gameInfo['associations']
     # Lists we will use to see if anything has been removed from the game we stored in our DB
