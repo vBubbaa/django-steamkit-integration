@@ -301,6 +301,100 @@ def ProcessExistingGame(client, appid, changenum):
         )
         gameChange.save()
 
+    # Generate all genres related to the app
+    tags = gameInfo['genres']
+    tagList = []
+    for tag in tags.items():
+        tagList.append(tag[1])
+    tagRes = tag_request(str(appid), 'genres', tagList)
+    genreList = []
+
+    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+    for item in tagRes:
+        for k, v in item.items():
+            # When the key is ID, check if that genre exists in our genre model
+            if (k == 'id'):
+                if Genre.objects.filter(genre_id=v).exists():
+                    genre = Genre.objects.get(genre_id=v)
+                    # Check if genre is associated with the game
+                    if game.genres.filter(genre_id=v).exists():
+                        print('Genre is already associated with the game')
+                    else:
+                        game.genres.add(genre)
+                        payload = 'Added ' + genre.genre_description + \
+                            ' to ' + game.name + '\'s genres'
+                        gameChange = GameChange(
+                            change_number=changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
+                else:
+                    # If the genre doesn't exist in our genre model, create it
+                    genre = Genre.objects.create(genre_id=v)
+            elif (k == 'description'):
+                # If the desciption for the genre is not yet set, set it and associate game with the genre
+                if not genre.genre_description:
+                    print('genre v ' + v)
+                    genre.genre_description = v
+                    genre.save()
+
+                    payload = 'Added ' + genre.genre_description + ' genre to the database'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
+                    game.genres.add(genre)
+
+                    payload = 'Added ' + genre.genre_description + \
+                        ' to ' + game.name + '\'s genres'
+                    gameChange = GameChange(
+                        change_number=changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+
+            genreList.append(genre.genre_description)
+
+            game.save()
+
+    for genre in game.genres.all():
+        if genre.genre_description not in genreList:
+            game.genres.remove(genre)
+
+            payload = 'Removed ' + genre.genre_description + \
+                ' from ' + game.name + '\'s genres'
+            gameChange = GameChange(
+                change_number=changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
+
     # Generate primary genre
     pg = gameInfo['primary_genre']
     tagList = []
