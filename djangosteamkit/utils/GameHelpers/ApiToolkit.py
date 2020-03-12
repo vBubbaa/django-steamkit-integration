@@ -79,7 +79,7 @@ def tag_request(appid, tag_type, tag_ids):
     # ]
     #
 
-    return returnList
+        return returnList
 
     except Exception as e:
         print('Oopsies, something went wrong with Tag Request for appid ... ' +
