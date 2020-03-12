@@ -52,25 +52,25 @@ See the problem?
 
 
 def tag_request(appid, tag_type, tag_ids):
-    # try:
-    # Initial request and response
-    tagRequest = requests.get(
-        "http://store.steampowered.com/api/appdetails/?appids=" + appid + "&format=json")
-    tagRequest = tagRequest.json()
-    # Grab the tag type we are fetching (ex. genre, category)
-    request = tagRequest.get(appid)['data'][tag_type]
-    # Empty list we will return a list of dicts with the id AND (needed =>) description
-    returnList = []
+    try:
+        # Initial request and response
+        tagRequest = requests.get(
+            "http://store.steampowered.com/api/appdetails/?appids=" + appid + "&format=json")
+        tagRequest = tagRequest.json()
+        # Grab the tag type we are fetching (ex. genre, category)
+        request = tagRequest.get(appid)['data'][tag_type]
+        # Empty list we will return a list of dicts with the id AND (needed =>) description
+        returnList = []
 
-    # For each tag we need to get the description for
-    for tag in tag_ids:
-        # For each item in the request res, (each item in the list of dicts)
-        for item in request:
-            # For key and value in items (ex. 'id': 1, 'description': 'Action')
-            for k, v in item.items():
-                # If the key is 'id' (not description) append the entire dict back (which contains description)
-                if (k == 'id' and str(v) == tag):
-                    returnList.append(item)
+        # For each tag we need to get the description for
+        for tag in tag_ids:
+            # For each item in the request res, (each item in the list of dicts)
+            for item in request:
+                # For key and value in items (ex. 'id': 1, 'description': 'Action')
+                for k, v in item.items():
+                    # If the key is 'id' (not description) append the entire dict back (which contains description)
+                    if (k == 'id' and str(v) == tag):
+                        returnList.append(item)
 
     # Return Fomrat (list of dicts with the id and description):
     # [
@@ -81,10 +81,11 @@ def tag_request(appid, tag_type, tag_ids):
 
     return returnList
 
-    # except Exception as e:
-    #     print('Oopsies, something went wrong... ' + e)
-    #     returnList = None
-    #     return returnList
+    except Exception as e:
+        print('Oopsies, something went wrong with Tag Request for appid ... ' +
+              str(appid) + ' and error: ' + e)
+        returnList = None
+        return returnList
 
 
 ex = tag_request('730', 'genres', ['1', '37'])
