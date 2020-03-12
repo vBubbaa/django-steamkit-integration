@@ -187,13 +187,13 @@ def ProcessNewGame(client, appid, changenum):
                 print(os)
                 if (os == 'windows'):
                     game.os.add(
-                        OSOptions.objects.get(os=OSOptions.WIN))
+                        OSOptions.objects.get_or_create(os=OSOptions.WIN)[0])
                 elif (os == 'macos'):
                     game.os.add(
-                        OSOptions.objects.get(os=OSOptions.MAC))
-                else:
+                        OSOptions.objects.get_or_create(os=OSOptions.MAC)[0])
+                elif (os == 'linux'):
                     game.os.add(
-                        OSOptions.objects.get(os=OSOptions.LIN))
+                        OSOptions.objects.get_or_create(os=OSOptions.LIN)[0])
             game.save()
 
         # Associations (publishers and developers for a given game)
