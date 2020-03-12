@@ -40,13 +40,26 @@ def ProcessNewGame(client, appid, changenum):
             steam_release_date=epochToDateTime(gameInfo['steam_release_date']),
             metacritic_score=gameInfo['metacritic_score'],
             metacritic_fullurl=gameInfo['metacritic_fullurl'],
-            community_visible_stats=boolify(
-                gameInfo['community_visible_stats']),
-            workshop_visible=boolify(gameInfo['workshop_visible']),
-            community_hub_visible=boolify(gameInfo['community_hub_visible']),
-            review_score=int(gameInfo['review_score']),
-            review_percentage=int(gameInfo['review_percentage'])
         )
+        game.save()
+
+        # Need to check for None on bool fields, if they arent None then @boolify them
+        bool_fields = ['community_visible_stats',
+                       'workshop_visible', 'community_hub_visible']
+        for boolean in bool_fields:
+            if gameInfo[boolean] is not None:
+                setattr(game, boolean, boolify(gameInfo[boolean]))
+            else:
+                setattr(game, boolean, None)
+        game.save()
+
+        # Need to check for None on int fields, if they arent None then cast them to ints
+        int_fields = ['review_score', 'review_percentage']
+        for int_field in int_fields:
+            if gameInfo[int_field] is not None:
+                setattr(game, int_field, int(gameInfo[int_field]))
+            else:
+                setattr(game, int_field, None)
         game.save()
 
         # Generate new price instance and set the recieved price to the apps current price
@@ -245,8 +258,10 @@ def ProcessExistingGame(client, appid, changenum):
     # Fields we can check by simply comparing strings (ex. NOT fields with relationships [fk, m2m])
     easyFieldChecks = [
         'name', 'release_state', 'icon', 'logo', 'logo_small', 'clienticon', 'controller_support',
-        'metacritic_score', 'metacritic_fullurl', 'review_score', 'review_percentage'
+        'metacritic_score', 'metacritic_fullurl'
     ]
+
+    intFieldChecks = ['review_score', 'review_percentage']
 
     boolFieldChecks = ['community_visible_stats',
                        'workshop_visible', 'community_hub_visible']
@@ -255,6 +270,18 @@ def ProcessExistingGame(client, appid, changenum):
     for field in easyFieldChecks:
         if gameInfo[field] is not None:
             compareCharField(
+                getattr(game, field),
+                gameInfo[field],
+                game,
+                field,
+                changenum
+            )
+        else:
+            pass
+
+    for field in intFieldChecks:
+        if gameInfo[field] is not None:
+            compareIntField(
                 getattr(game, field),
                 gameInfo[field],
                 game,
@@ -839,7 +866,38 @@ def compareBoolField(currentVal, steamkitVal, game, db_field_name, changenum):
         pass
     # Else, a change did occur for a field so return the new val so we can set it in our DB
     else:
-        setattr(game, db_field_name, steamkitVal)
+        if steamkitVal is not None:
+            setattr(game, db_field_name, boolify(steamkitVal))
+        else:
+            setattr(game, db_field_name, None)
+        game.save()
+
+        payload = str(db_field_name) + ' updated: ' + \
+            str(bool(currentVal)) + ' => ' + str(bool(steamkitVal))
+        gameChange = GameChange(
+            change_number=changenum,
+            game=game,
+            changelog=GameChange.changelog_builder(
+                GameChange.UPDATE,
+                game.appid,
+                payload=payload
+            ),
+            action=GameChange.UPDATE
+        )
+        gameChange.save()
+
+
+def compareIntField(currentVal, steamkitVal, game, db_field_name, changenum):
+    # If the chars are equal, no change has happened so return None
+    if bool(currentVal) == bool(steamkitVal):
+        print('No change for field: ' + db_field_name)
+        pass
+    # Else, a change did occur for a field so return the new val so we can set it in our DB
+    else:
+        if steamkitVal is not None:
+            setattr(game, db_field_name, int(steamkitVal))
+        else:
+            setattr(game, db_field_name, None)
         game.save()
 
         payload = str(db_field_name) + ' updated: ' + \

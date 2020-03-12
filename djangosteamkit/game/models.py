@@ -14,12 +14,12 @@ class Game(models.Model):
     # Supported OS' [choose from 'windows', 'macos', and 'linux']
     os = models.ManyToManyField('OSOptions')
     # Release state of the game (ex. released, pre-release, etc.)
-    release_state = models.CharField(max_length=32, null=True)
+    release_state = models.CharField(max_length=32, null=True, blank=True)
     # Image stuff that points to the image url on steams domain
-    icon = models.CharField(max_length=128, null=True)
-    logo = models.CharField(max_length=128, null=True)
-    logo_small = models.CharField(max_length=128, null=True)
-    clienticon = models.CharField(max_length=128, null=True)
+    icon = models.CharField(max_length=128, null=True, blank=True)
+    logo = models.CharField(max_length=128, null=True, blank=True)
+    logo_small = models.CharField(max_length=128, null=True, blank=True)
+    clienticon = models.CharField(max_length=128, null=True, blank=True)
     # Languages supported by the app
     supported_languages = models.ManyToManyField('Languages')
     # Type of app (game, dlc, etc.)
@@ -38,17 +38,17 @@ class Game(models.Model):
     # Categories relating to the app
     categories = models.ManyToManyField('Category')
     # Release date converted from epoch to django datetimefield format
-    steam_release_date = models.DateTimeField(null=True)
+    steam_release_date = models.DateTimeField(null=True, blank=True)
     # Metacritic stuff
-    metacritic_score = models.CharField(max_length=264, null=True)
-    metacritic_fullurl = models.URLField(null=True)
+    metacritic_score = models.CharField(max_length=264, null=True, blank=True)
+    metacritic_fullurl = models.URLField(null=True, blank=True)
     # Other T/F fields
-    community_visible_stats = models.BooleanField(null=True)
-    workshop_visible = models.BooleanField(null=True)
-    community_hub_visible = models.BooleanField(null=True)
+    community_visible_stats = models.BooleanField(null=True, blank=True)
+    workshop_visible = models.BooleanField(null=True, blank=True)
+    community_hub_visible = models.BooleanField(null=True, blank=True)
     # Review stuff
-    review_score = models.IntegerField(null=True)
-    review_percentage = models.IntegerField(null=True)
+    review_score = models.IntegerField(null=True, blank=True)
+    review_percentage = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name
