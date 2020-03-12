@@ -19,7 +19,7 @@ class Command(BaseCommand):
         client.login()
 
         # Constant appid of Counter-Strike so we can test fields
-        appid = 730
+        appid = 700580
         # Fake changenum for testing
         changenum = 1337
         ProcessNewGame(client, appid, changenum)

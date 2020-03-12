@@ -73,89 +73,92 @@ def ProcessNewGame(client, appid, changenum):
 
         # Generate all categories related to the app
         categories = gameInfo['category']
-        catList = []
-        for cat in categories:
-            catList.append(cat.split('_')[1])
-        catRes = tag_request(str(appid), 'categories', catList)
+        if categories is not None:
+            catList = []
+            for cat in categories:
+                catList.append(cat.split('_')[1])
+            catRes = tag_request(str(appid), 'categories', catList)
 
-        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-        for item in catRes:
-            for k, v in item.items():
-                # When the key is ID, check if that genre exists in our genre model
-                if (k == 'id'):
-                    if Category.objects.filter(category_id=v).exists():
-                        category = Category.objects.get(category_id=v)
-                        # If exists, associate the game to that genre
-                        game.categories.add(category)
-                    else:
-                        # If the genre doesn't exist in our genre model, create it
-                        category = Category.objects.create(category_id=v)
-                elif (k == 'description'):
-                    # If the desciption for the genre is not yet set, set it and associate game with the genre
-                    if not category.category_description:
-                        print('genre v ' + v)
-                        category.category_description = v
-                        category.save()
-                        game.categories.add(category)
+            # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+            for item in catRes:
+                for k, v in item.items():
+                    # When the key is ID, check if that genre exists in our genre model
+                    if (k == 'id'):
+                        if Category.objects.filter(category_id=v).exists():
+                            category = Category.objects.get(category_id=v)
+                            # If exists, associate the game to that genre
+                            game.categories.add(category)
+                        else:
+                            # If the genre doesn't exist in our genre model, create it
+                            category = Category.objects.create(category_id=v)
+                    elif (k == 'description'):
+                        # If the desciption for the genre is not yet set, set it and associate game with the genre
+                        if not category.category_description:
+                            print('genre v ' + v)
+                            category.category_description = v
+                            category.save()
+                            game.categories.add(category)
 
-                game.save()
+                    game.save()
 
         # Generate all genres related to the app
         tags = gameInfo['genres']
-        tagList = []
-        for tag in tags.items():
-            tagList.append(tag[1])
-        tagRes = tag_request(str(appid), 'genres', tagList)
+        if tags is not None:
+            tagList = []
+            for tag in tags.items():
+                tagList.append(tag[1])
+            tagRes = tag_request(str(appid), 'genres', tagList)
 
-        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-        for item in tagRes:
-            for k, v in item.items():
-                # When the key is ID, check if that genre exists in our genre model
-                if (k == 'id'):
-                    if Genre.objects.filter(genre_id=v).exists():
-                        genre = Genre.objects.get(genre_id=v)
-                        # If exists, associate the game to that genre
-                        game.genres.add(genre)
-                    else:
-                        # If the genre doesn't exist in our genre model, create it
-                        genre = Genre.objects.create(genre_id=v)
-                elif (k == 'description'):
-                    # If the desciption for the genre is not yet set, set it and associate game with the genre
-                    if not genre.genre_description:
-                        print('genre v ' + v)
-                        genre.genre_description = v
-                        genre.save()
-                        game.genres.add(genre)
+            # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+            for item in tagRes:
+                for k, v in item.items():
+                    # When the key is ID, check if that genre exists in our genre model
+                    if (k == 'id'):
+                        if Genre.objects.filter(genre_id=v).exists():
+                            genre = Genre.objects.get(genre_id=v)
+                            # If exists, associate the game to that genre
+                            game.genres.add(genre)
+                        else:
+                            # If the genre doesn't exist in our genre model, create it
+                            genre = Genre.objects.create(genre_id=v)
+                    elif (k == 'description'):
+                        # If the desciption for the genre is not yet set, set it and associate game with the genre
+                        if not genre.genre_description:
+                            print('genre v ' + v)
+                            genre.genre_description = v
+                            genre.save()
+                            game.genres.add(genre)
 
-                game.save()
+                    game.save()
 
         # Generate primary genre
         pg = gameInfo['primary_genre']
-        tagList = []
-        tagList.append(pg)
-        # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
-        tagRes = tag_request(str(appid), 'genres', tagList)
+        if pg is not None:
+            tagList = []
+            tagList.append(pg)
+            # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
+            tagRes = tag_request(str(appid), 'genres', tagList)
 
-        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-        for item in tagRes:
-            for k, v in item.items():
-                # When the key is ID, check if that genre exists in our genre model
-                if (k == 'id'):
-                    if Genre.objects.filter(genre_id=v).exists():
-                        genre = Genre.objects.get(genre_id=v)
-                        # If exists, set the primary genre to that genre
-                        game.primary_genre = genre
-                    else:
-                        # If the genre doesn't exist in our genre model, create it
-                        genre = Genre.objects.create(genre_id=v)
-                elif (k == 'description'):
-                    # If the desciption for the genre is not yet set, set it and associate game with the primary genre
-                    if not genre.genre_description:
-                        genre.genre_description = v
-                        genre.save()
-                        game.primary_genre = genre
+            # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+            for item in tagRes:
+                for k, v in item.items():
+                    # When the key is ID, check if that genre exists in our genre model
+                    if (k == 'id'):
+                        if Genre.objects.filter(genre_id=v).exists():
+                            genre = Genre.objects.get(genre_id=v)
+                            # If exists, set the primary genre to that genre
+                            game.primary_genre = genre
+                        else:
+                            # If the genre doesn't exist in our genre model, create it
+                            genre = Genre.objects.create(genre_id=v)
+                    elif (k == 'description'):
+                        # If the desciption for the genre is not yet set, set it and associate game with the primary genre
+                        if not genre.genre_description:
+                            genre.genre_description = v
+                            genre.save()
+                            game.primary_genre = genre
 
-                game.save()
+                    game.save()
 
         # Language Stuff
         languagesRes = gameInfo['languages']
@@ -330,24 +333,63 @@ def ProcessExistingGame(client, appid, changenum):
 
     # Generate all categories related to the app
     categories = gameInfo['category']
-    catList = []
-    for cat in categories:
-        catList.append(cat.split('_')[1])
-    catRes = tag_request(str(appid), 'categories', catList)
-    catList = []
+    if categories is not None:
+        catList = []
+        for cat in categories:
+            catList.append(cat.split('_')[1])
+        catRes = tag_request(str(appid), 'categories', catList)
+        catList = []
 
-    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-    for item in catRes:
-        for k, v in item.items():
-            # When the key is ID, check if that genre exists in our genre model
-            if (k == 'id'):
-                if Category.objects.filter(category_id=v).exists():
-                    category = Category.objects.get(category_id=v)
-                    # Check if category is associated with the game
-                    if game.categories.filter(category_id=v).exists():
-                        print('Category is already assocated with the game')
+        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+        for item in catRes:
+            for k, v in item.items():
+                # When the key is ID, check if that genre exists in our genre model
+                if (k == 'id'):
+                    if Category.objects.filter(category_id=v).exists():
+                        category = Category.objects.get(category_id=v)
+                        # Check if category is associated with the game
+                        if game.categories.filter(category_id=v).exists():
+                            print('Category is already assocated with the game')
+                        else:
+                            game.categories.add(category)
+                            payload = 'Added ' + category.category_description + \
+                                ' to ' + game.name + '\'s categories'
+                            gameChange = GameChange(
+                                change_number=changenum,
+                                game=game,
+                                changelog=GameChange.changelog_builder(
+                                    GameChange.UPDATE,
+                                    game.appid,
+                                    payload=payload
+                                ),
+                                action=GameChange.UPDATE
+                            )
+                            gameChange.save()
                     else:
+                        # If the genre doesn't exist in our genre model, create it
+                        category = Category.objects.create(category_id=v)
+                elif (k == 'description'):
+                    # If the desciption for the genre is not yet set, set it and associate game with the genre
+                    if not category.category_description:
+                        print('category v ' + v)
+                        category.category_description = v
+                        category.save()
+
+                        payload = 'Added ' + category.category_description + ' category to the database'
+                        gameChange = GameChange(
+                            change_number=changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
+
                         game.categories.add(category)
+
                         payload = 'Added ' + category.category_description + \
                             ' to ' + game.name + '\'s categories'
                         gameChange = GameChange(
@@ -361,87 +403,88 @@ def ProcessExistingGame(client, appid, changenum):
                             action=GameChange.UPDATE
                         )
                         gameChange.save()
-                else:
-                    # If the genre doesn't exist in our genre model, create it
-                    category = Category.objects.create(category_id=v)
-            elif (k == 'description'):
-                # If the desciption for the genre is not yet set, set it and associate game with the genre
-                if not category.category_description:
-                    print('category v ' + v)
-                    category.category_description = v
-                    category.save()
 
-                    payload = 'Added ' + category.category_description + ' category to the database'
-                    gameChange = GameChange(
-                        change_number=changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
+                catList.append(category.category_description)
 
-                    game.categories.add(category)
+                game.save()
 
-                    payload = 'Added ' + category.category_description + \
-                        ' to ' + game.name + '\'s categories'
-                    gameChange = GameChange(
-                        change_number=changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
+        for category in game.categories.all():
+            if category.category_description not in catList:
+                game.categories.remove(category)
 
-            catList.append(category.category_description)
-
-            game.save()
-
-    for category in game.categories.all():
-        if category.category_description not in catList:
-            game.categories.remove(category)
-
-            payload = 'Removed ' + category.category_description + \
-                ' from ' + game.name + '\'s categories'
-            gameChange = GameChange(
-                change_number=changenum,
-                game=game,
-                changelog=GameChange.changelog_builder(
-                    GameChange.UPDATE,
-                    game.appid,
-                    payload=payload
-                ),
-                action=GameChange.UPDATE
-            )
-            gameChange.save()
+                payload = 'Removed ' + category.category_description + \
+                    ' from ' + game.name + '\'s categories'
+                gameChange = GameChange(
+                    change_number=changenum,
+                    game=game,
+                    changelog=GameChange.changelog_builder(
+                        GameChange.UPDATE,
+                        game.appid,
+                        payload=payload
+                    ),
+                    action=GameChange.UPDATE
+                )
+                gameChange.save()
 
     # Generate all genres related to the app
     tags = gameInfo['genres']
-    tagList = []
-    for tag in tags.items():
-        tagList.append(tag[1])
-    tagRes = tag_request(str(appid), 'genres', tagList)
-    genreList = []
+    if tags is not None:
+        tagList = []
+        for tag in tags.items():
+            tagList.append(tag[1])
+        tagRes = tag_request(str(appid), 'genres', tagList)
+        genreList = []
 
-    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-    for item in tagRes:
-        for k, v in item.items():
-            # When the key is ID, check if that genre exists in our genre model
-            if (k == 'id'):
-                if Genre.objects.filter(genre_id=v).exists():
-                    genre = Genre.objects.get(genre_id=v)
-                    # Check if genre is associated with the game
-                    if game.genres.filter(genre_id=v).exists():
-                        print('Genre is already associated with the game')
+        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+        for item in tagRes:
+            for k, v in item.items():
+                # When the key is ID, check if that genre exists in our genre model
+                if (k == 'id'):
+                    if Genre.objects.filter(genre_id=v).exists():
+                        genre = Genre.objects.get(genre_id=v)
+                        # Check if genre is associated with the game
+                        if game.genres.filter(genre_id=v).exists():
+                            print('Genre is already associated with the game')
+                        else:
+                            game.genres.add(genre)
+                            payload = 'Added ' + genre.genre_description + \
+                                ' to ' + game.name + '\'s genres'
+                            gameChange = GameChange(
+                                change_number=changenum,
+                                game=game,
+                                changelog=GameChange.changelog_builder(
+                                    GameChange.UPDATE,
+                                    game.appid,
+                                    payload=payload
+                                ),
+                                action=GameChange.UPDATE
+                            )
+                            gameChange.save()
                     else:
+                        # If the genre doesn't exist in our genre model, create it
+                        genre = Genre.objects.create(genre_id=v)
+                elif (k == 'description'):
+                    # If the desciption for the genre is not yet set, set it and associate game with the genre
+                    if not genre.genre_description:
+                        print('genre v ' + v)
+                        genre.genre_description = v
+                        genre.save()
+
+                        payload = 'Added ' + genre.genre_description + ' genre to the database'
+                        gameChange = GameChange(
+                            change_number=changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
+
                         game.genres.add(genre)
+
                         payload = 'Added ' + genre.genre_description + \
                             ' to ' + game.name + '\'s genres'
                         gameChange = GameChange(
@@ -455,85 +498,71 @@ def ProcessExistingGame(client, appid, changenum):
                             action=GameChange.UPDATE
                         )
                         gameChange.save()
-                else:
-                    # If the genre doesn't exist in our genre model, create it
-                    genre = Genre.objects.create(genre_id=v)
-            elif (k == 'description'):
-                # If the desciption for the genre is not yet set, set it and associate game with the genre
-                if not genre.genre_description:
-                    print('genre v ' + v)
-                    genre.genre_description = v
-                    genre.save()
 
-                    payload = 'Added ' + genre.genre_description + ' genre to the database'
-                    gameChange = GameChange(
-                        change_number=changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
+                genreList.append(genre.genre_description)
 
-                    game.genres.add(genre)
+                game.save()
 
-                    payload = 'Added ' + genre.genre_description + \
-                        ' to ' + game.name + '\'s genres'
-                    gameChange = GameChange(
-                        change_number=changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
+        for genre in game.genres.all():
+            if genre.genre_description not in genreList:
+                game.genres.remove(genre)
 
-            genreList.append(genre.genre_description)
-
-            game.save()
-
-    for genre in game.genres.all():
-        if genre.genre_description not in genreList:
-            game.genres.remove(genre)
-
-            payload = 'Removed ' + genre.genre_description + \
-                ' from ' + game.name + '\'s genres'
-            gameChange = GameChange(
-                change_number=changenum,
-                game=game,
-                changelog=GameChange.changelog_builder(
-                    GameChange.UPDATE,
-                    game.appid,
-                    payload=payload
-                ),
-                action=GameChange.UPDATE
-            )
-            gameChange.save()
+                payload = 'Removed ' + genre.genre_description + \
+                    ' from ' + game.name + '\'s genres'
+                gameChange = GameChange(
+                    change_number=changenum,
+                    game=game,
+                    changelog=GameChange.changelog_builder(
+                        GameChange.UPDATE,
+                        game.appid,
+                        payload=payload
+                    ),
+                    action=GameChange.UPDATE
+                )
+                gameChange.save()
 
     # Generate primary genre
     pg = gameInfo['primary_genre']
-    tagList = []
-    tagList.append(pg)
-    # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
-    tagRes = tag_request(str(appid), 'genres', tagList)
+    if pg is not None:
+        tagList = []
+        tagList.append(pg)
+        # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
+        tagRes = tag_request(str(appid), 'genres', tagList)
 
-    # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-    for item in tagRes:
-        for k, v in item.items():
-            # When the key is ID, check if that genre exists in our genre model
-            if (k == 'id'):
-                if Genre.objects.filter(genre_id=v).exists():
-                    genre = Genre.objects.get(genre_id=v)
-                    # Check if game primary genre is up to date with the res primary genre
-                    if game.primary_genre == genre:
-                        print('primary genre up to date')
+        # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+        for item in tagRes:
+            for k, v in item.items():
+                # When the key is ID, check if that genre exists in our genre model
+                if (k == 'id'):
+                    if Genre.objects.filter(genre_id=v).exists():
+                        genre = Genre.objects.get(genre_id=v)
+                        # Check if game primary genre is up to date with the res primary genre
+                        if game.primary_genre == genre:
+                            print('primary genre up to date')
+                        else:
+                            game.primary_genre = genre
+
+                            payload = 'Updated ' + game.name + \
+                                '\'s primary genre to ' + genre.genre_description
+                            gameChange = GameChange(
+                                change_number=changenum,
+                                game=game,
+                                changelog=GameChange.changelog_builder(
+                                    GameChange.UPDATE,
+                                    game.appid,
+                                    payload=payload
+                                ),
+                                action=GameChange.UPDATE
+                            )
+                            gameChange.save()
                     else:
+                        # If the genre doesn't exist in our genre model, create it
+                        genre = Genre.objects.create(genre_id=v)
+                elif (k == 'description'):
+                    # If the desciption for the genre is not yet set, set it and associate game with the primary genre
+                    if not genre.genre_description:
+                        genre.genre_description = v
+                        genre.save()
                         game.primary_genre = genre
 
                         payload = 'Updated ' + game.name + \
@@ -549,38 +578,14 @@ def ProcessExistingGame(client, appid, changenum):
                             action=GameChange.UPDATE
                         )
                         gameChange.save()
-                else:
-                    # If the genre doesn't exist in our genre model, create it
-                    genre = Genre.objects.create(genre_id=v)
-            elif (k == 'description'):
-                # If the desciption for the genre is not yet set, set it and associate game with the primary genre
-                if not genre.genre_description:
-                    genre.genre_description = v
-                    genre.save()
-                    game.primary_genre = genre
 
-                    payload = 'Updated ' + game.name + \
-                        '\'s primary genre to ' + genre.genre_description
-                    gameChange = GameChange(
-                        change_number=changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
-
-            game.save()
+                game.save()
 
     # Associations (publishers and developers for a given game)
     assoc = gameInfo['associations']
     # Lists we will use to see if anything has been removed from the game we stored in our DB
     devList = []
     pubList = []
-    print('associations')
     if assoc is not None:
         # Loop through each association  through .values()
         for a in assoc.values():
