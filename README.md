@@ -5,9 +5,9 @@ An integration of the python ported steamkit library to monitor steamapps (creat
 - [Requirements](#Requirements)
 - [Installation](#Installation)
 - [Usage](#Usage)
-- [How does this work?](#Howdoesthiswork?)
-- [What does this script NOT do](#WhatdoesthisscriptNOTdo?)
-- [Why was this made?](#Whywasthismade?)
+- [How does this work?](#How-does-this-work?)
+- [What does this script NOT do](#What-does-this-script-NOT-do?)
+- [Why was this made?](#Why-was-this-made?)
 
 ## Requirements
 - Python 3+
