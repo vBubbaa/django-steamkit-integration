@@ -18,6 +18,14 @@ def gameoverview(request, game_appid, game_slug):
     return render(request, 'gameoverview.html', {'game': game})
 
 
-class GameList(generics.ListCreateAPIView):
+# Returns all apps in our DB
+class GameList(generics.ListAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+
+# Returns a single app from our DB
+class GameDetail(generics.RetrieveAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+    lookup_field = 'appid'

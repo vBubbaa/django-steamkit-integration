@@ -40,12 +40,14 @@ class PublisherSerializer(ModelSerializer):
         fields = ['publisher']
 
 
+# Only get the description, however we can also get the ID Steam associates with this tag by calling 'genre_id'
 class GenreSerializer(ModelSerializer):
     class Meta:
         model = Genre
         fields = ['genre_description']
 
 
+# Only get the description, however we can also get the ID Steam associates with this tag by calling 'category_id'
 class CategorySerializer(ModelSerializer):
     class Meta:
         model = Category
@@ -54,10 +56,10 @@ class CategorySerializer(ModelSerializer):
 
 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
 
+
 # Serialize all games in the DB
-
-
 class GameSerializer(ModelSerializer):
+    # The relation fields (m2m, f2k) with custom serializers to pull the correct values
     prices = PriceSerializer(many=True)
     current_price = PriceSerializer()
     os = OSOptionsSerializer(many=True)
@@ -68,6 +70,7 @@ class GameSerializer(ModelSerializer):
     genres = GenreSerializer(many=True)
     primary_genre = GenreSerializer()
     categories = CategorySerializer(many=True)
+    #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
 
     class Meta:
         model = Game
