@@ -1,9 +1,8 @@
 from rest_framework.serializers import ModelSerializer
 from game.models import Game, Price, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
 
+
 # M2M and FK relation serializers so we can pull the value and not the ID #
-
-
 class PriceSerializer(ModelSerializer):
     class Meta:
         model = Price
