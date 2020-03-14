@@ -14,7 +14,7 @@ SECRET_KEY = 'a8%kb3hj=xe9xw^-(0!vl5wc7t#p8*b(ypc@^din#6e0gpgsv_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -29,9 +29,11 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'game',
     'rest_framework',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -40,6 +42,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CHANGE THIS IN PROD
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'djangosteamkit.urls'
 
