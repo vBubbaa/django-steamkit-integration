@@ -76,7 +76,15 @@ class GameSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class GameNameSerializer(ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ['name']
+
+
 class LogSerializer(ModelSerializer):
+    game = GameNameSerializer()
+
     class Meta:
         model = GameChange
         fields = '__all__'
