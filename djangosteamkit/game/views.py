@@ -2,7 +2,7 @@ from django.shortcuts import render
 from game.models import Game, GameChange
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from game.serializers import GameSerializer
+from game.serializers import GameSerializer, LogSerializer
 
 
 def index(request):
@@ -29,3 +29,8 @@ class GameDetail(generics.RetrieveAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
     lookup_field = 'appid'
+
+
+class LogList(generics.ListAPIView):
+    queryset = GameChange.objects.all().order_by('-id')[:10]
+    serializer_class = LogSerializer

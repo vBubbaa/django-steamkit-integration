@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from game.models import Game, Price, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category
+from game.models import Game, Price, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category, GameChange
 
 
 # M2M and FK relation serializers so we can pull the value and not the ID #
@@ -73,4 +73,10 @@ class GameSerializer(ModelSerializer):
 
     class Meta:
         model = Game
+        fields = '__all__'
+
+
+class LogSerializer(ModelSerializer):
+    class Meta:
+        model = GameChange
         fields = '__all__'
