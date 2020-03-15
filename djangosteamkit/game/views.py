@@ -2,6 +2,8 @@ from django.shortcuts import render
 from game.models import Game, GameChange
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from game.serializers import GameSerializer, LogSerializer
 
 
@@ -31,6 +33,20 @@ class GameDetail(generics.RetrieveAPIView):
     lookup_field = 'appid'
 
 
+# Returns the 10 most recent changelogs
 class LogList(generics.ListAPIView):
     queryset = GameChange.objects.all().order_by('-id')[:10]
     serializer_class = LogSerializer
+
+
+# Returns custom data about out db
+# @response:
+#   - appcount: number of apps in our database
+#
+class AppCount(APIView):
+    def get(self, request):
+        data = {}
+        numApps = Game.objects.all().count()
+        data['appcount'] = str(numApps)
+
+        return Response(data)

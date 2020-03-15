@@ -7,5 +7,6 @@ urlpatterns = [
     path('games', views.GameList.as_view()),
     # Singular game instace by appid NOT primary key (db ID)
     path('games/<int:appid>', views.GameDetail.as_view()),
-    path('logs/', views.LogList.as_view())
+    path('logs/', views.LogList.as_view()),
+    path('appcount/', views.AppCount.as_view())
 ]
