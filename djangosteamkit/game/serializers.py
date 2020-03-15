@@ -1,4 +1,5 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from game.models import Game, Price, OSOptions, Languages, AppType, Developer, Publisher, Genre, Category, GameChange
 
 
@@ -84,6 +85,7 @@ class GameNameSerializer(ModelSerializer):
 
 class LogSerializer(ModelSerializer):
     game = GameNameSerializer()
+    created_time = serializers.DateTimeField(source='format_date')
 
     class Meta:
         model = GameChange

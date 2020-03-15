@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
 
 class Game(models.Model):
@@ -78,6 +79,9 @@ class GameChange(models.Model):
         else:
             changelog = str(action) + ' ' + str(appid) + ' to the database'
         return changelog
+
+    def format_date(self):
+        return naturaltime(self.created_time)
 
 
 class Price(models.Model):
