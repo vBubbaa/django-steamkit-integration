@@ -5,6 +5,8 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from game.serializers import GameSerializer, LogSerializer
+from django.utils.timezone import datetime
+import requests
 
 
 def index(request):
@@ -48,5 +50,17 @@ class AppCount(APIView):
         data = {}
         numApps = Game.objects.all().count()
         data['appcount'] = str(numApps)
+
+        return Response(data)
+
+
+# Returns the count of logs registered today
+class LogsToday(APIView):
+    def get(self, request):
+        data = {}
+        today = datetime.today()
+        numLogs = GameChange.objects.filter(created_time__year=today.year,
+                                            created_time__month=today.month, created_time__day=today.day).count()
+        data['logcount'] = str(numLogs)
 
         return Response(data)
