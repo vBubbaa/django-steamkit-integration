@@ -93,6 +93,8 @@ class LogSerializer(ModelSerializer):
 
 
 class GameLogSerializer(ModelSerializer):
+    created_time = serializers.DateTimeField(source='format_date')
+
     class Meta:
         model = GameChange
         fields = '__all__'
