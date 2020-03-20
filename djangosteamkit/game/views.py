@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from game.serializers import GameSerializer, LogSerializer
+from game.serializers import GameSerializer, LogSerializer, GameLogSerializer
 from django.utils.timezone import datetime
 import requests
 
@@ -23,12 +23,14 @@ def gameoverview(request, game_appid, game_slug):
 
 
 # Returns all apps in our DB
+# @URL: games/
 class GameList(generics.ListAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
 
 # Returns a single app from our DB
+# @URL: games/<int:appid>
 class GameDetail(generics.RetrieveAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
@@ -36,6 +38,7 @@ class GameDetail(generics.RetrieveAPIView):
 
 
 # Returns the 10 most recent changelogs
+# @URL: logs/
 class LogList(generics.ListAPIView):
     queryset = GameChange.objects.all().order_by('-id')[:10]
     serializer_class = LogSerializer
@@ -45,6 +48,7 @@ class LogList(generics.ListAPIView):
 # @response:
 #   - appcount: number of apps in our database
 #
+# @URL: appcount/
 class AppCount(APIView):
     def get(self, request):
         data = {}
@@ -55,6 +59,7 @@ class AppCount(APIView):
 
 
 # Returns the count of logs registered today
+# @URL: logstoday/
 class LogsToday(APIView):
     def get(self, request):
         data = {}
@@ -64,3 +69,14 @@ class LogsToday(APIView):
         data['logcount'] = str(numLogs)
 
         return Response(data)
+
+
+# Returns changelogs for a given game
+# @URL: gamelogs/<int:appid>
+class GameLogs(generics.ListAPIView):
+    serializer_class = GameLogSerializer
+
+    def get_queryset(self):
+        appid = self.kwargs['appid']
+        game = Game.objects.filter(appid=appid)
+        return GameChange.objects.filter(game__appid=appid)

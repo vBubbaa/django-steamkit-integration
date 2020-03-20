@@ -90,3 +90,9 @@ class LogSerializer(ModelSerializer):
     class Meta:
         model = GameChange
         fields = '__all__'
+
+
+class GameLogSerializer(ModelSerializer):
+    class Meta:
+        model = GameChange
+        fields = '__all__'
