@@ -93,6 +93,7 @@ class LogSerializer(ModelSerializer):
 
 
 class GameLogSerializer(ModelSerializer):
+    game = GameNameSerializer()
     created_time = serializers.DateTimeField(source='format_date')
 
     class Meta:
