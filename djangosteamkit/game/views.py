@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from game.serializers import GameSerializer, LogSerializer, GameLogSerializer
 from django.utils.timezone import datetime
+from game.pagination import StandardResultsSetPagination
 import requests
 
 
@@ -25,8 +26,9 @@ def gameoverview(request, game_appid, game_slug):
 # Returns all apps in our DB
 # @URL: games/
 class GameList(generics.ListAPIView):
-    queryset = Game.objects.all()
     serializer_class = GameSerializer
+    pagination_class = StandardResultsSetPagination
+    queryset = Game.objects.all()
 
 
 # Returns a single app from our DB
