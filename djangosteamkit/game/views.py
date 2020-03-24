@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from game.serializers import GameSerializer, LogSerializer, GameLogSerializer
 from django.utils.timezone import datetime
 from game.pagination import StandardResultsSetPagination
+from rest_framework import filters
 import requests
 
 
@@ -29,6 +30,8 @@ class GameList(generics.ListAPIView):
     serializer_class = GameSerializer
     pagination_class = StandardResultsSetPagination
     queryset = Game.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'appid']
 
 
 # Returns a single app from our DB

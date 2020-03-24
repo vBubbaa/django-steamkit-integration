@@ -10,7 +10,7 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
             'pagination': {
                 'total': self.page.paginator.count,
                 'num_pages': self.page.paginator.num_pages,
-                'current_page': self.request.query_params.get('page', None),
+                'current_page': int(self.request.query_params.get('page', 1)),
                 'next_page_url': self.get_next_link(),
                 'previous_page_url': self.get_previous_link(),
             },
