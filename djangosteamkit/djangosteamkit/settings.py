@@ -16,6 +16,19 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
 
+SITE_ID = 1
+
+LOGIN_REDIRECT_URL = '/'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'openid': {
+        'SERVERS': [
+            dict(id='Steam',
+                 name='Steam OpenID',
+                 openid_url='https://steamcommunity.com/openid'),
+        ]
+    }
+}
 
 # Application definition
 
@@ -27,9 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',
     'game',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.openid',
+    'steam_custom',
+
 ]
 
 MIDDLEWARE = [
@@ -115,3 +135,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STEAM_REDIRECT_URL = 'http://127.0.0.1:8080'
