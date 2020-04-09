@@ -9,9 +9,9 @@ from allauth.socialaccount.providers.openid.provider import (
 )
 
 
-class SteamAccount(OpenIDAccount):
+class SteamCustomAccount(OpenIDAccount):
     def to_str(self):
-        dflt = super(SteamAccount, self).to_str()
+        dflt = super(SteamCustomAccount, self).to_str()
         return self.account.extra_data.get('personaname', dflt)
 
     def get_profile_url(self):
@@ -41,10 +41,10 @@ def request_steam_account_summary(api_key, steam_id):
     return playerlist[0] if playerlist else {"steamid": steam_id}
 
 
-class SteamOpenIDProvider(OpenIDProvider):
-    id = "steam"
-    name = "Steam"
-    account_class = SteamAccount
+class SteamCustomOpenIDProvider(OpenIDProvider):
+    id = "steam_custom"
+    name = "Steam Custom"
+    account_class = SteamCustomAccount
 
     def get_login_url(self, request, **kwargs):
         url = reverse("steam_login")
@@ -58,9 +58,7 @@ class SteamOpenIDProvider(OpenIDProvider):
         response._extra = request_steam_account_summary(
             steam_api_key, steam_id
         )
-        return super(SteamOpenIDProvider, self).sociallogin_from_response(
-            request, response
-        )
+        return self.extract_extra_data(response)
 
     def extract_uid(self, response):
         return response._extra["steamid"]
@@ -74,9 +72,7 @@ class SteamOpenIDProvider(OpenIDProvider):
             first_name, last_name = full_name.split()
         else:
             first_name, last_name = full_name, ""
-
         username = response._extra.get("personaname", "")
-
         return {
             "username": username or response._extra["steamid"],
             "first_name": first_name,
@@ -85,4 +81,4 @@ class SteamOpenIDProvider(OpenIDProvider):
         }
 
 
-provider_classes = [SteamOpenIDProvider]
+provider_classes = [SteamCustomOpenIDProvider]
