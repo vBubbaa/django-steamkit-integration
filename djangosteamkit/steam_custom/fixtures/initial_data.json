@@ -1,0 +1,16 @@
+[
+{
+    "model": "socialaccount.socialapp",
+    "pk": 1,
+    "fields": {
+        "provider": "steam",
+        "name": "Steam",
+        "client_id": "None",
+        "secret": "29ADA8FE335052FE66A32EEB043ABA31",
+        "key": "",
+        "sites": [
+            1
+        ]
+    }
+}
+]
