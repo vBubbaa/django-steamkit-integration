@@ -3,7 +3,7 @@
     "model": "socialaccount.socialapp",
     "pk": 1,
     "fields": {
-        "provider": "steam",
+        "provider": "steam_custom",
         "name": "Steam",
         "client_id": "None",
         "secret": "29ADA8FE335052FE66A32EEB043ABA31",
