@@ -11,6 +11,9 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'a8%kb3hj=xe9xw^-(0!vl5wc7t#p8*b(ypc@^din#6e0gpgsv_'
 
+STEAM_API_KEY = '29ADA8FE335052FE66A32EEB043ABA31'
+STEAM_ROOT_ENDPOINT = 'http://api.steampowered.com'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
