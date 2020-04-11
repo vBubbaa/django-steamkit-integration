@@ -44,9 +44,12 @@ class Game(models.Model):
     metacritic_score = models.CharField(max_length=264, null=True, blank=True)
     metacritic_fullurl = models.URLField(null=True, blank=True)
     # Other T/F fields
-    community_visible_stats = models.BooleanField(default=False)
-    workshop_visible = models.BooleanField(default=False)
-    community_hub_visible = models.BooleanField(default=False)
+    community_visible_stats = models.BooleanField(
+        default=False, null=True, blank=True)
+    workshop_visible = models.BooleanField(
+        default=False, null=True, blank=True)
+    community_hub_visible = models.BooleanField(
+        default=False, null=True, blank=True)
     # Review stuff
     review_score = models.IntegerField(null=True, blank=True)
     review_percentage = models.IntegerField(null=True, blank=True)

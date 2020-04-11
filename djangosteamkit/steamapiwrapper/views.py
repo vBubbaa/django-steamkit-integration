@@ -50,6 +50,7 @@ class UserOverview(APIView):
             # which uses steamkit to create a model object of the app
             else:
                 print('game does not exist')
+                # create the game in our database here
 
         # Append the game list to the response
         self.res['games'] = self.games
