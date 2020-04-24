@@ -1,3 +1,12 @@
+##############################################
+# This import needs to be before the other imports
+# See https://github.com/ValvePython/steam/issues/97
+import gevent
+from gevent import monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
+###############################################
+
 import faulthandler
 from utils.GameHelpers.ApiToolkit import get_price
 from django.utils.text import slugify

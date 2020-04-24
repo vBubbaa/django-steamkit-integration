@@ -1,8 +1,11 @@
+from utils.GameHelpers.ModelProcessor import ProcessNewGame
+from utils.GameHelpers.Client import Client
 from django.shortcuts import render
 from game.models import Game
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
+from django.core.management import call_command
 import requests
 
 
@@ -16,6 +19,7 @@ class UserOverview(APIView):
         # Steamid we will set by the URL parameter @steamid
         self.steamid = None
         self.games = []
+        self.apps = []
 
     # Func to get games from request, then get the additional game information from our database
     # Will return a json object with:
@@ -51,6 +55,16 @@ class UserOverview(APIView):
             else:
                 print('game does not exist')
                 # create the game in our database here
+                self.apps.append(game['appid'])
+
+        if (self.apps.count is not None):
+            print('pre login')
+            client = Client()
+            client.login()
+            print('after login')
+            for app in self.apps:
+                print(str(app))
+                ProcessNewGame(client, app, 1337)
 
         # Append the game list to the response
         self.res['games'] = self.games
