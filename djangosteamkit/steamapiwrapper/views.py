@@ -1,5 +1,10 @@
-from utils.GameHelpers.ModelProcessor import ProcessNewGame
-from utils.GameHelpers.Client import Client
+import gevent.monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
+
+from utils.ModelProcessor import ModelProcessor
+from utils.client import SteamWorker
+from utils.SteamApiHandler import SteamApi
 from django.shortcuts import render
 from game.models import Game
 from rest_framework.views import APIView
@@ -59,12 +64,17 @@ class UserOverview(APIView):
 
         if (self.apps.count is not None):
             print('pre login')
-            client = Client()
-            client.login()
+            worker = SteamWorker()
+            worker.login()
+
+            processor = ModelProcessor()
+
+            api = SteamApi()
+            playerLib = api.getUserLibrary(self.steamid)
             print('after login')
             for app in self.apps:
                 print(str(app))
-                ProcessNewGame(client, app, 1337)
+                processor.processNewGame(app, 1337, worker, api)
 
         # Append the game list to the response
         self.res['games'] = self.games

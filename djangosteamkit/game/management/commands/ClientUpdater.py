@@ -1,16 +1,12 @@
-##############################################
-# This import needs to be before the other imports
-# See https://github.com/ValvePython/steam/issues/97
-import gevent
-from gevent import monkey
+import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
-###############################################
 
 import time
 from django.core.management.base import BaseCommand, CommandError
-from utils.GameHelpers.ModelProcessor import ProcessNewGame, ProcessExistingGame
-from utils.GameHelpers.Client import Client
+from utils.ModelProcessor import ModelProcessor
+from utils.client import SteamWorker
+from utils.SteamApiHandler import SteamApi
 from game.models import Game
 
 
@@ -25,16 +21,22 @@ Usage:
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        # Call the custom client class which handles connecting to the steam client
-        client = Client()
-        client.login()
+        # Steamkit client
+        worker = SteamWorker()
+        worker.login()
+
+        # Our model processor to process games
+        processor = ModelProcessor()
+
+        # Api object to handle api calls (needed for our model processor class)
+        api = SteamApi()
 
         """
         - This function grabs the current change number that the steam client is on
         - The script will use this to check for new change numbers
         """
         def getCurrentChangeNumber():
-            changes = client.get_changes(1)
+            changes = worker.get_changes(1)
             currentChangeNum = changes.current_change_number
             return currentChangeNum
 
@@ -46,7 +48,7 @@ class Command(BaseCommand):
         # Loop forever to monitor client changes, waits 10 seconds to check for new changes
         while True:
             # Sets the changes to always be at the current change number in our script
-            changes = client.get_changes(currentChangeNumber)
+            changes = worker.get_changes(currentChangeNumber)
 
             print('after change declaration hit')
 
@@ -59,11 +61,13 @@ class Command(BaseCommand):
                     # If App exists, update it
                     if (Game.objects.filter(appid=change.appid).exists()):
                         print("Game exists")
+                        appid = change.appid
+                        processor.processExistingGame(appid, change.change_number, worker, api)
                     # If app doesnt exist, create it
                     else:
                         print('Game does not exist')
                         appid = change.appid
-                        ProcessNewGame(client, appid, change.change_number)
+                        processor.processNewGame(appid, change.change_number, worker, api)
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNumber = getCurrentChangeNumber()
