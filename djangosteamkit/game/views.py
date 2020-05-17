@@ -1,3 +1,7 @@
+import gevent.monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
+
 from django.shortcuts import render
 from game.models import Game, GameChange
 from django.shortcuts import get_object_or_404
