@@ -39,6 +39,11 @@ class UserOverview(APIView):
         self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
 
+        worker = SteamWorker()
+        worker.login()
+        processor = ModelProcessor()
+        api = SteamApi()
+
         for game in games:
             # Check if game exists in our database
             if Game.objects.filter(appid=game['appid']).exists():
@@ -50,7 +55,8 @@ class UserOverview(APIView):
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
                     'current_price': str(dbgame.current_price.price),
-                    'total_playtime': str(round(game['playtime_forever'] / 60, 2))
+                    'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
@@ -59,22 +65,16 @@ class UserOverview(APIView):
             # which uses steamkit to create a model object of the app
             else:
                 print('game does not exist')
-                # create the game in our database here
-                self.apps.append(game['appid'])
-
-        if (self.apps.count is not None):
-            print('pre login')
-            worker = SteamWorker()
-            worker.login()
-
-            processor = ModelProcessor()
-
-            api = SteamApi()
-            playerLib = api.getUserLibrary(self.steamid)
-            print('after login')
-            for app in self.apps:
-                print(str(app))
-                processor.processNewGame(app, 1337, worker, api)
+                newGame = processor.processNewGame(game['appid'], 1337, worker, api)  
+                formatGame = {
+                    'appid': str(newGame.appid),
+                    'name': newGame.name,
+                    'current_price': str(newGame.current_price.price),
+                    'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(newGame.appid) + '/header.jpg'
+                }
+                # Append the game to our games list we will pass back
+                self.games.append(formatGame)     
 
         # Append the game list to the response
         self.res['games'] = self.games
