@@ -3,6 +3,7 @@ gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
 import requests
+from django.conf import settings
 
 
 class SteamApi():
@@ -19,6 +20,43 @@ class SteamApi():
         res = req.json()
         return res
 
+    def getVacInfo(self, steamid):
+        method = '/ISteamUser/GetPlayerBans/v1/'
+        url = self.baseurl + method + self.key + '&steamids=' + str(steamid) + self.format
+        req = requests.get(url)
+        res = req.json()
+        return res
+
+    # Gets a players profile details (personaname, picture, etc.)
+    def getUserDetails(self, steamid):
+        method = '/ISteamUser/GetPlayerSummaries/v001/'
+        url = self.baseurl + method + self.key + '&steamids=' + str(steamid) + self.format
+        req = requests.get(url)
+        res = req.json()
+        return res
+
+    # Gets a players list of friends and get their user details
+    def getFriendsList(self, steamid):
+        method = '/ISteamUser/GetFriendList/v0001/'
+        url = settings.STEAM_ROOT_ENDPOINT + method
+        params = {'key': settings.STEAM_API_KEY,
+                  'steamid': steamid, 'relationship': 'friend'}
+        request = requests.get(url, params)
+        response = request.json()
+        friendsRes = response['friendslist']
+        friendsInfoList = []
+
+        # Iterate through each steamid in friends list and get the user details for that steamid
+        for f in friendsRes['friends']:
+            friendInfo = self.getUserDetails(f['steamid'])['response']['players']
+            print(friendInfo)
+            friendsInfoList.append(friendInfo)
+            
+        print(friendsInfoList)
+            
+        return friendsInfoList
+
+    # Gets the price of an app with an appid as a parameter
     def priceRequest(self, appid):
         try:
             priceRequest = requests.get(
@@ -43,6 +81,9 @@ class SteamApi():
 
         return price
 
+    # Gets tag description of a tagid (instead of the tag id, returns the name of the tag)
+    # Ex. Category, genre, etc.
+    # Steamkit only returns a numerical tag id, not the tag name
     def tag_request(self, appid, tag_type, tag_ids):
         try:
             # Initial request and response

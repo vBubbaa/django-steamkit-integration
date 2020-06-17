@@ -12,9 +12,10 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.core.management import call_command
 import requests
-
+from collections import Counter
 
 # Endpoint route: userapi/useroverview/<int:steamid>
+
 class UserOverview(APIView):
     def __init__(self):
         # Steam web api method of to grab owned games by player
@@ -24,7 +25,13 @@ class UserOverview(APIView):
         # Steamid we will set by the URL parameter @steamid
         self.steamid = None
         self.games = []
-        self.apps = []
+        self.vacInfo = []
+        self.userDetails = []
+
+        self.worker = SteamWorker()
+        self.worker.login()
+        self.processor = ModelProcessor()
+        self.api = SteamApi()
 
     # Func to get games from request, then get the additional game information from our database
     # Will return a json object with:
@@ -38,11 +45,6 @@ class UserOverview(APIView):
         response = request.json()
         self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
-
-        worker = SteamWorker()
-        worker.login()
-        processor = ModelProcessor()
-        api = SteamApi()
 
         for game in games:
             # Check if game exists in our database
@@ -65,7 +67,9 @@ class UserOverview(APIView):
             # which uses steamkit to create a model object of the app
             else:
                 print('game does not exist')
-                newGame = processor.processNewGame(game['appid'], 1337, worker, api)  
+                newGame = self.processor.processNewGame(
+                    game['appid'], 1337, self.worker, self.api)
+                # processor.processNewGame(appid, changenum, worker, api)
                 formatGame = {
                     'appid': str(newGame.appid),
                     'name': newGame.name,
@@ -74,12 +78,110 @@ class UserOverview(APIView):
                     'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(newGame.appid) + '/header.jpg'
                 }
                 # Append the game to our games list we will pass back
-                self.games.append(formatGame)     
+                self.games.append(formatGame)
 
         # Append the game list to the response
         self.res['games'] = self.games
+
+    def getVacs(self):
+        vacs = self.api.getVacInfo(self.steamid)
+        self.res['vacinfo'] = vacs
+
+    def getUserDetails(self):
+        userDetails = self.api.getUserDetails(self.steamid)
+        print(userDetails)
+        self.res['userdetails'] = userDetails
+
+    def get(self, request, *args, **kwargs):
+        self.steamid = kwargs.get('steamid')
+        self.getGames()
+        self.getVacs()
+        self.getUserDetails()
+        print(self.res)
+        return Response(self.res)
+
+
+class GetFriendList(APIView):
+    def __init__(self):
+        self.method = '/ISteamUser/GetFriendList/v0001/'
+        # Steamid we will set by the URL parameter @steamid
+        self.steamid = None
+        self.res = {}
+        self.api = SteamApi()
+
+    def getGames(self):
+        friends = self.api.getFriendsList(self.steamid)
+        self.res['friends'] = friends
 
     def get(self, request, *args, **kwargs):
         self.steamid = kwargs.get('steamid')
         self.getGames()
         return Response(self.res)
+
+
+class GetComparedGames(APIView):
+    def __init__(self):
+        self.sids = []
+        self.gameList = []
+        self.commonGames = []
+
+        self.worker = SteamWorker()
+        self.worker.login()
+        self.processor = ModelProcessor()
+        self.api = SteamApi()
+
+    def getGames(self):
+        return None
+
+    # Processes the SID parameters so we can get a compared list going
+    def processIdParams(self, sids):
+        for k, v in sids.items():
+            print('SID: ' + v)
+            self.sids.append(v)
+        return self.sids
+
+    def getCommonGames(self):
+        # Loop through each comparee
+        for sid in self.sids:
+            # Get their game app library
+            userLib = self.api.getUserLibrary(sid)
+            # Loop through each game and append it to the game list
+            for game in userLib['response']['games']:
+                self.gameList.append(game['appid'])
+
+        # https://stackoverflow.com/a/15812667
+        # stores all common appids in var 'out'
+        counter = Counter(self.gameList)
+        out = [value for value, count in counter.items() if count > 1]
+
+        # Get each game from commongames from db or create it
+        for game in out:
+            if Game.objects.filter(appid=game).exists():
+                dbgame = Game.objects.get(appid=game)
+                formatGame = {
+                    'appid': str(dbgame.appid),
+                    'name': dbgame.name,
+                    'current_price': str(dbgame.current_price.price),
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg',
+                    'slug': str(dbgame.slug)
+                }
+                self.commonGames.append(formatGame)
+            else:
+                newGame = self.processor.processNewGame(
+                    game['appid'], 1337, self.worker, self.api)
+                # processor.processNewGame(appid, changenum, worker, api)
+                formatGame = {
+                    'appid': str(newGame.appid),
+                    'name': newGame.name,
+                    'current_price': str(newGame.current_price.price),
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(newGame.appid) + '/header.jpg',
+                    'slug': str(newGame.slug)
+                }
+                # Append the game to our games list we will pass back
+                self.commonGames.append(formatGame)
+
+
+    def get(self, request, *args, **kwargs):
+        self.processIdParams(request.query_params)
+        self.getCommonGames()
+        return Response(self.commonGames)
