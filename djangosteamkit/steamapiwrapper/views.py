@@ -168,7 +168,7 @@ class GetComparedGames(APIView):
                 self.commonGames.append(formatGame)
             else:
                 newGame = self.processor.processNewGame(
-                    game['appid'], 1337, self.worker, self.api)
+                    game, 1337, self.worker, self.api)
                 # processor.processNewGame(appid, changenum, worker, api)
                 formatGame = {
                     'appid': str(newGame.appid),
