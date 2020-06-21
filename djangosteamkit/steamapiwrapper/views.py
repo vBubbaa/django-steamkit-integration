@@ -1,20 +1,21 @@
+from collections import Counter
+import requests
+from django.core.management import call_command
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from game.models import Game
+from django.shortcuts import render
+from utils.SteamApiHandler import SteamApi
+from utils.client import SteamWorker
+from utils.ModelProcessor import ModelProcessor
 import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
-from utils.ModelProcessor import ModelProcessor
-from utils.client import SteamWorker
-from utils.SteamApiHandler import SteamApi
-from django.shortcuts import render
-from game.models import Game
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.conf import settings
-from django.core.management import call_command
-import requests
-from collections import Counter
 
 # Endpoint route: userapi/useroverview/<int:steamid>
+
 
 class UserOverview(APIView):
     def __init__(self):
@@ -27,6 +28,7 @@ class UserOverview(APIView):
         self.games = []
         self.vacInfo = []
         self.userDetails = []
+        self.libraryCost = 0
 
         self.worker = SteamWorker()
         self.worker.login()
@@ -58,7 +60,7 @@ class UserOverview(APIView):
                     'name': dbgame.name,
                     'current_price': str(dbgame.current_price.price),
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg'
+                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(dbgame.appid) + '/' + str(dbgame.logo) + '.jpg'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
@@ -75,13 +77,17 @@ class UserOverview(APIView):
                     'name': newGame.name,
                     'current_price': str(newGame.current_price.price),
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(newGame.appid) + '/header.jpg'
+                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(newGame.appid) + '/' + str(newgame.logo) + '.jpg'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
 
+            if formatGame['current_price'] is not None:
+                self.libraryCost += float(formatGame['current_price'])
+
         # Append the game list to the response
         self.res['games'] = self.games
+        self.res['libcost'] = self.libraryCost
 
     def getVacs(self):
         vacs = self.api.getVacInfo(self.steamid)
@@ -179,7 +185,6 @@ class GetComparedGames(APIView):
                 }
                 # Append the game to our games list we will pass back
                 self.commonGames.append(formatGame)
-
 
     def get(self, request, *args, **kwargs):
         self.processIdParams(request.query_params)
