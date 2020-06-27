@@ -53,6 +53,16 @@ class LogList(generics.ListAPIView):
     serializer_class = LogSerializer
 
 
+# Returns all logs (paginated)
+# @url: alllogs/
+class AllLogs(generics.ListAPIView):
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['changelog', 'action', 'id', 'game__name']
+    pagination_class = StandardResultsSetPagination
+    queryset = GameChange.objects.all()
+    serializer_class = LogSerializer
+
+
 # Returns custom data about out db
 # @response:
 #   - appcount: number of apps in our database

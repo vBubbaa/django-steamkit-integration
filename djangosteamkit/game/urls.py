@@ -11,4 +11,5 @@ urlpatterns = [
     path('logstoday/', views.LogsToday.as_view()),
     path('gamelogs/<int:appid>', views.GameLogs.as_view()),
     path('appcount/', views.AppCount.as_view()),
+    path('alllogs/', views.AllLogs.as_view())
 ]
