@@ -82,6 +82,28 @@ class GameNameSerializer(ModelSerializer):
         model = Game
         fields = ['name', 'appid', 'slug']
 
+class DeveloperPageSerializer(ModelSerializer):
+    # Method to get game count of developer
+    game_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Developer
+        fields = '__all__'
+
+    def get_game_count(self, developer):
+        return Game.objects.filter(developer=developer).count()
+
+class PublisherPageSerializer(ModelSerializer):
+    # Method to get game count of developer
+    game_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Publisher
+        fields = '__all__'
+
+    def get_game_count(self, publisher):
+        return Game.objects.filter(publisher=publisher).count()
+
 
 class LogSerializer(ModelSerializer):
     game = GameNameSerializer()
