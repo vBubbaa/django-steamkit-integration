@@ -80,7 +80,7 @@ class GameSerializer(ModelSerializer):
 class GameNameSerializer(ModelSerializer):
     class Meta:
         model = Game
-        fields = ['name']
+        fields = ['name', 'appid', 'slug']
 
 
 class LogSerializer(ModelSerializer):
