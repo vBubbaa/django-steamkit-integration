@@ -57,7 +57,7 @@ class LogList(generics.ListAPIView):
 # @url: alllogs/
 class AllLogs(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
-    search_fields = ['changelog', 'action', 'id', 'game__name']
+    search_fields = ['changelog', 'action', 'id', 'game__name', 'game__appid']
     pagination_class = StandardResultsSetPagination
     queryset = GameChange.objects.all()
     serializer_class = LogSerializer
