@@ -15,4 +15,5 @@ urlpatterns = [
     path('developers/', views.DeveloperList.as_view()),
     path('publishers/', views.PublisherList.as_view()),
     path('genres/', views.GenreList.as_view()),
+    path('gamesbygenre/<int:genreid>', views.GamesByGenre.as_view())
 ]
