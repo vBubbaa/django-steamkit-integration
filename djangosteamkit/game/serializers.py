@@ -104,6 +104,17 @@ class PublisherPageSerializer(ModelSerializer):
     def get_game_count(self, publisher):
         return Game.objects.filter(publisher=publisher).count()
 
+class GenrePageSerializer(ModelSerializer):
+    # Method to get game count of developer
+    game_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Genre
+        fields = '__all__'
+
+    def get_game_count(self, genres):
+        return Game.objects.filter(genres=genres).count()
+
 
 class LogSerializer(ModelSerializer):
     game = GameNameSerializer()

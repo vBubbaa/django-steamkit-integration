@@ -13,5 +13,6 @@ urlpatterns = [
     path('appcount/', views.AppCount.as_view()),
     path('alllogs/', views.AllLogs.as_view()),
     path('developers/', views.DeveloperList.as_view()),
-    path('publishers/', views.PublisherList.as_view())
+    path('publishers/', views.PublisherList.as_view()),
+    path('genres/', views.GenreList.as_view()),
 ]

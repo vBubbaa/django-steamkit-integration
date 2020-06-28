@@ -3,12 +3,12 @@ gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
 from django.shortcuts import render
-from game.models import Game, GameChange, Developer, Publisher
+from game.models import Game, GameChange, Developer, Publisher, Genre
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer
+from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer, GenrePageSerializer
 from django.utils.timezone import datetime
 from game.pagination import StandardResultsSetPagination
 from rest_framework import filters
@@ -79,6 +79,15 @@ class PublisherList(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     queryset = Publisher.objects.all()
     serializer_class = PublisherPageSerializer
+
+# Returns all Genres
+# @url: genres/
+class GenreList(generics.ListAPIView):
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['genre_description']
+    pagination_class = StandardResultsSetPagination
+    queryset = Genre.objects.all()
+    serializer_class = GenrePageSerializer
 
 # Returns custom data about out db
 # @response:
