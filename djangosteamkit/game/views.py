@@ -101,6 +101,30 @@ class GamesByGenre(generics.ListAPIView):
         queryset = Game.objects.filter(genres__id = genre_id)
         return queryset
 
+# Grabs all games via Developer
+class GamesByDeveloper(generics.ListAPIView):
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'appid']
+    pagination_class = StandardResultsSetPagination
+    serializer_class = GameSerializer
+
+    def get_queryset(self):
+        developer_id = self.kwargs['developerid']
+        queryset = Game.objects.filter(developer__id = developer_id)
+        return queryset
+
+# Grabs all games via Publisher
+class GamesByPublisher(generics.ListAPIView):
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'appid']
+    pagination_class = StandardResultsSetPagination
+    serializer_class = GameSerializer
+
+    def get_queryset(self):
+        publisher_id = self.kwargs['publisherid']
+        queryset = Game.objects.filter(publisher__id = publisher_id)
+        return queryset
+
 # Returns custom data about out db
 # @response:
 #   - appcount: number of apps in our database
