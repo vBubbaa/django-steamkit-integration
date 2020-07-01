@@ -48,6 +48,13 @@ class GameList(generics.ListAPIView):
         isFree = self.request.query_params.get('isFree', None)
         if isFree == 'true':
             queryset = queryset.filter(current_price__price = 0)
+        os = self.request.query_params.get('os', None)
+        if os == 'Windows':
+            queryset = queryset.filter(os__os = 'WIN')
+        if os == 'Mac':
+            queryset = queryset.filter(os__os = 'MAC')
+        if os == 'Linux':
+            queryset = queryset.filter(os__os = 'LIN')
 
         return queryset
 
