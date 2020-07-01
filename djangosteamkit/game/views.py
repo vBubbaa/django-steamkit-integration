@@ -33,9 +33,18 @@ def gameoverview(request, game_appid, game_slug):
 class GameList(generics.ListAPIView):
     serializer_class = GameSerializer
     pagination_class = StandardResultsSetPagination
-    queryset = Game.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'appid']
+    ordering = ['-id']
+
+    def get_queryset(self):
+        queryset = Game.objects.all()
+        controllerSupport = self.request.query_params.get('controllerSupport', None)
+        if controllerSupport == 'true':
+            print('controlle support')
+            queryset = queryset.filter(controller_support = 'full')
+        return queryset
+
 
 
 # Returns a single app from our DB
