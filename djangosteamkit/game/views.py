@@ -41,8 +41,14 @@ class GameList(generics.ListAPIView):
         queryset = Game.objects.all()
         controllerSupport = self.request.query_params.get('controllerSupport', None)
         if controllerSupport == 'true':
-            print('controlle support')
             queryset = queryset.filter(controller_support = 'full')
+        releaseState = self.request.query_params.get('releaseState', None)
+        if releaseState == 'true':
+            queryset = queryset.filter(release_state = 'released')
+        isFree = self.request.query_params.get('isFree', None)
+        if isFree == 'true':
+            queryset = queryset.filter(current_price__price = 0)
+
         return queryset
 
 
