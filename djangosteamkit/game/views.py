@@ -3,12 +3,12 @@ gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
 from django.shortcuts import render
-from game.models import Game, GameChange, Developer, Publisher, Genre, Languages
+from game.models import Game, GameChange, Developer, Publisher, Genre, Languages, AppType
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer, GenrePageSerializer, LanguageSerializer
+from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer, GenrePageSerializer, LanguageSerializer, AppTypeSerializer
 from django.utils.timezone import datetime
 from game.pagination import StandardResultsSetPagination
 from rest_framework import filters
@@ -62,6 +62,15 @@ class GameList(generics.ListAPIView):
         language = self.request.query_params.get('langPayload', None)
         if language is not None and language != '':
             queryset = queryset.filter(supported_languages__language = language)
+
+        appType = self.request.query_params.get('appTypePayload', None)
+        if appType is not None and appType != '':
+            queryset = queryset.filter(app_type__app_type = appType)
+
+        weebFilter = self.request.query_params.get('weebFilter', None)
+        if weebFilter == 'true':
+            queryset = queryset.exclude(genres__genre_description = 'Sexual Content')
+
 
         return queryset
 
@@ -121,6 +130,10 @@ class GenreList(generics.ListAPIView):
 class LanguageList(generics.ListAPIView):
     queryset = Languages.objects.all()
     serializer_class = LanguageSerializer
+
+class AppTypeList(generics.ListAPIView):
+    queryset = AppType.objects.all()
+    serializer_class = AppTypeSerializer
 
 # Grabs all games via genre
 class GamesByGenre(generics.ListAPIView):

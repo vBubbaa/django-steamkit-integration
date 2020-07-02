@@ -35,7 +35,7 @@ class Game(models.Model):
     primary_genre = models.ForeignKey(
         'Genre', on_delete=models.CASCADE, related_name='primary_genre', blank=True, null=True)
     # All genre relating to the app
-    genres = models.ManyToManyField('Genre')
+    genres = models.ManyToManyField('Genre', related_name='genres')
     # Categories relating to the app
     categories = models.ManyToManyField('Category')
     # Release date converted from epoch to django datetimefield format
