@@ -3,12 +3,12 @@ gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
 from django.shortcuts import render
-from game.models import Game, GameChange, Developer, Publisher, Genre
+from game.models import Game, GameChange, Developer, Publisher, Genre, Languages
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer, GenrePageSerializer
+from game.serializers import GameSerializer, LogSerializer, GameLogSerializer, DeveloperPageSerializer, PublisherPageSerializer, GenrePageSerializer, LanguageSerializer
 from django.utils.timezone import datetime
 from game.pagination import StandardResultsSetPagination
 from rest_framework import filters
@@ -42,12 +42,15 @@ class GameList(generics.ListAPIView):
         controllerSupport = self.request.query_params.get('controllerSupport', None)
         if controllerSupport == 'true':
             queryset = queryset.filter(controller_support = 'full')
+
         releaseState = self.request.query_params.get('releaseState', None)
         if releaseState == 'true':
             queryset = queryset.filter(release_state = 'released')
+
         isFree = self.request.query_params.get('isFree', None)
         if isFree == 'true':
             queryset = queryset.filter(current_price__price = 0)
+
         os = self.request.query_params.get('os', None)
         if os == 'Windows':
             queryset = queryset.filter(os__os = 'WIN')
@@ -55,6 +58,10 @@ class GameList(generics.ListAPIView):
             queryset = queryset.filter(os__os = 'MAC')
         if os == 'Linux':
             queryset = queryset.filter(os__os = 'LIN')
+
+        language = self.request.query_params.get('langPayload', None)
+        if language is not None and language != '':
+            queryset = queryset.filter(supported_languages__language = language)
 
         return queryset
 
@@ -110,6 +117,10 @@ class GenreList(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     queryset = Genre.objects.all()
     serializer_class = GenrePageSerializer
+
+class LanguageList(generics.ListAPIView):
+    queryset = Languages.objects.all()
+    serializer_class = LanguageSerializer
 
 # Grabs all games via genre
 class GamesByGenre(generics.ListAPIView):

@@ -20,4 +20,5 @@ urlpatterns = [
          views.GamesByDeveloper.as_view()),
     path('gamesbypublisher/<int:publisherid>',
          views.GamesByPublisher.as_view()),
+     path('languages/', views.LanguageList.as_view())
 ]
