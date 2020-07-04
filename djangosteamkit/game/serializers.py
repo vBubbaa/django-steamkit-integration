@@ -31,20 +31,20 @@ class AppTypeSerializer(ModelSerializer):
 class DeveloperSerializer(ModelSerializer):
     class Meta:
         model = Developer
-        fields = ['developer']
+        fields = '__all__'
 
 
 class PublisherSerializer(ModelSerializer):
     class Meta:
         model = Publisher
-        fields = ['publisher']
+        fields = '__all__'
 
 
 # Only get the description, however we can also get the ID Steam associates with this tag by calling 'genre_id'
 class GenreSerializer(ModelSerializer):
     class Meta:
         model = Genre
-        fields = ['genre_description']
+        fields = '__all__'
 
 
 # Only get the description, however we can also get the ID Steam associates with this tag by calling 'category_id'
