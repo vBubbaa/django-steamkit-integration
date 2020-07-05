@@ -207,3 +207,13 @@ class GameLogs(generics.ListAPIView):
         appid = self.kwargs['appid']
         game = Game.objects.filter(appid=appid)
         return GameChange.objects.filter(game__appid=appid)
+
+# Returns steamspy information given an appid as a param
+# @url: steamspy/<int:appid>
+class SteamSpyView(APIView):
+    def get(self, request, appid):
+        if appid is not None and appid != '':
+            request = requests.get('https://steamspy.com/api.php?request=appdetails&appid=' + str(appid))
+            print(request)
+
+        return Response(request.json())

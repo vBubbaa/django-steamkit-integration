@@ -21,5 +21,6 @@ urlpatterns = [
     path('gamesbypublisher/<int:publisherid>',
          views.GamesByPublisher.as_view()),
     path('languages/', views.LanguageList.as_view()),
-    path('apptypes/', views.AppTypeList.as_view())
+    path('apptypes/', views.AppTypeList.as_view()),
+    path('steamspy/<int:appid>', views.SteamSpyView.as_view()),
 ]
