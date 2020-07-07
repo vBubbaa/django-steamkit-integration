@@ -49,10 +49,7 @@ class SteamApi():
         # Iterate through each steamid in friends list and get the user details for that steamid
         for f in friendsRes['friends']:
             friendInfo = self.getUserDetails(f['steamid'])['response']['players']
-            print(friendInfo)
             friendsInfoList.append(friendInfo)
-            
-        print(friendsInfoList)
             
         return friendsInfoList
 

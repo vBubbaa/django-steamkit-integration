@@ -1,3 +1,7 @@
+import gevent.monkey
+gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
+
 from collections import Counter
 import requests
 from django.core.management import call_command
@@ -9,14 +13,74 @@ from django.shortcuts import render
 from utils.SteamApiHandler import SteamApi
 from utils.client import SteamWorker
 from utils.ModelProcessor import ModelProcessor
-import gevent.monkey
-gevent.monkey.patch_socket()
-gevent.monkey.patch_ssl()
+import os
+from django.conf import settings
+import json
 
+class LocationBuilder(APIView):
+    def __init__(self):
+        self.steamid = None
+        self.locations = []
+        self.res = {}
+        self.api = SteamApi()
+
+    # Function to take in the users location codes and grab the coordinates and return a list of [latitude, longitude]
+    def coordinateBuilder(self, country, state, city):
+        # Read the country code json file provided @https://github.com/Holek/steam-friends-countries
+        codeFile = os.path.join(settings.STATIC_ROOT, 'json/steam_countries.json')
+        with open(codeFile, encoding='utf8') as f:
+            data = json.load(f)
+
+        coordinates = data[str(country)].get('states')[str(state)].get('cities')[str(city)].get('coordinates')
+        split = coordinates.split(',')
+        return split
+
+    
+    def locationsBuilder(self):     
+        arrLat = []
+        arrLon = []
+
+        # Get friend list
+        friends = self.api.getFriendsList(self.steamid)
+        # Iterate friends and build the coordinates
+        for f in friends:
+            if f['player'][0].get('loccityid') is not None:
+                country = f['player'][0]['loccountrycode']
+                state = f['player'][0]['locstatecode']
+                city = str(f['player'][0]['loccityid'])
+
+                coordinates = self.coordinateBuilder(country, state, city)
+                print(str(coordinates))
+                latitude = str(coordinates[0])
+                longitude = str(coordinates[1])
+                
+                # If the coordinate is already in the list, it will show up directly on top of each other,
+                # This catches that and adds some latitude to offset it slightly on the map
+                if latitude in arrLat:
+                    dec = float(.03)
+                    latitude = float(latitude)
+                    latitude = dec + latitude
+                    latitude = str(round(latitude, 6))
+
+                arrLat.append(latitude)
+                arrLon.append(longitude)
+
+                self.locations.append({
+                    'name' : f['player'][0]['personaname'],
+                    'lat' : latitude,
+                    'lon' : longitude,
+                })
+        self.res['locations'] = self.locations
+
+    
+    def get(self, request, *args, **kwargs):
+        self.steamid = kwargs.get('steamid')
+        self.locationsBuilder()
+        return Response(self.res)
+
+    
 
 # Endpoint route: userapi/useroverview/<int:steamid>
-
-
 class UserOverview(APIView):
     def __init__(self):
         # Steam web api method of to grab owned games by player
@@ -34,6 +98,7 @@ class UserOverview(APIView):
         self.worker.login()
         self.processor = ModelProcessor()
         self.api = SteamApi()
+
 
     # Func to get games from request, then get the additional game information from our database
     # Will return a json object with:
@@ -77,12 +142,13 @@ class UserOverview(APIView):
                     'name': newGame.name,
                     'current_price': str(newGame.current_price.price),
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(newGame.appid) + '/' + str(newgame.logo) + '.jpg'
+                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(newGame.appid) + '/' + str(newGame.logo) + '.jpg'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
 
-            if formatGame['current_price'] is not None:
+            print(formatGame['current_price'])
+            if formatGame['current_price'] is not None and formatGame['current_price'] != 'None':
                 self.libraryCost += float(formatGame['current_price'])
 
         # Append the game list to the response
