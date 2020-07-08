@@ -1,5 +1,12 @@
 import os
 
+# If we are on the dev server (env var 'sc_server' is dev) import the dev specific settings
+# Else (env var 'sc_server' is not dev (prod)) import the prod specific settings
+if os.environ.get('SC_SERVER') == 'dev':
+    from .development import *
+else:
+    from .production import *
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -13,11 +20,6 @@ SECRET_KEY = os.environ.get('SC_SECRET_KEY')
 
 STEAM_API_KEY = '29ADA8FE335052FE66A32EEB043ABA31'
 STEAM_ROOT_ENDPOINT = 'http://api.steampowered.com'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
 
 SITE_ID = 1
 
@@ -65,9 +67,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# CHANGE THIS IN PROD
-CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'djangosteamkit.urls'
 
