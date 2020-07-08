@@ -4,8 +4,6 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 from time import sleep
 import json
-import sys
-sys.setrecursionlimit(1500)
 
 
 class ModelProcessor():

@@ -3,6 +3,7 @@ from game import views
 
 app_name = 'game'
 urlpatterns = [
+    path('user/', include('steamapiwrapper.urls')),
     # All Games
     path('games/', views.GameList.as_view()),
     # Singular game instace by appid NOT primary key (db ID)
