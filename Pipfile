@@ -11,6 +11,7 @@ steam = "*"
 beautifulsoup4 = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
+django-allauth = "*"
 
 [requires]
 python_version = "3.7"

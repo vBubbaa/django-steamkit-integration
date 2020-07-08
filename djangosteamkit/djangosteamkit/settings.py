@@ -9,7 +9,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'a8%kb3hj=xe9xw^-(0!vl5wc7t#p8*b(ypc@^din#6e0gpgsv_'
+SECRET_KEY = os.environ.get('SC_SECRET_KEY')
 
 STEAM_API_KEY = '29ADA8FE335052FE66A32EEB043ABA31'
 STEAM_ROOT_ENDPOINT = 'http://api.steampowered.com'
