@@ -1,4 +1,0 @@
-django==2.2
-django-allauth
-djangorestframework
-django-cors-headers
