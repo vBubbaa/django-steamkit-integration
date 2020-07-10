@@ -12,6 +12,7 @@ beautifulsoup4 = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
 django-allauth = "*"
+virtualenv = "*"
 
 [requires]
 python_version = "3.7"
