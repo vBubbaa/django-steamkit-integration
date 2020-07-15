@@ -25,9 +25,17 @@ from openid.consumer import consumer
 from .provider import SteamCustomOpenIDProvider, extract_steam_id
 import json
 
+import os
+
 
 STEAM_OPENID_URL = "https://steamcommunity.com/openid"
-STEAM_REDIRECT_URL = getattr(settings, 'STEAM_REDIRECT_URL', 'http://127.0.0.1:8080')
+
+if os.environ.get('SC_SERVER') == 'dev':
+    STEAM_REDIRECT_URL = getattr(
+        settings, 'STEAM_REDIRECT_URL', 'http://127.0.0.1:8080')
+else:
+    STEAM_REDIRECT_URL = getattr(
+        settings, 'STEAM_REDIRECT_URL', 'http://steamcomparer.com')
 
 
 class SteamCustomOpenIDLoginView(OpenIDLoginView):
@@ -62,7 +70,7 @@ class SteamCustomOpenIDCallbackView(OpenIDCallbackView):
         response = HttpResponseRedirect(STEAM_REDIRECT_URL)
 
         if steam_data:
-                response.set_cookie('steam_data', str(steam_data))
+            response.set_cookie('steam_data', str(steam_data))
         return response
 
 
