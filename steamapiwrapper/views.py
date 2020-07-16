@@ -103,10 +103,9 @@ class UserOverview(APIView):
     # This parsed response will be pass back to the enpoint request /userapi/useroverview/<int:steamid>
     def getGames(self):
         url = settings.STEAM_ROOT_ENDPOINT + self.method
-        params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid}
+        params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
         request = requests.get(url, params)
         response = request.json()
-        print('api res' + str(response))
         self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
 
@@ -128,20 +127,15 @@ class UserOverview(APIView):
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
                 
-            # If it doesn't exist, use the api to fetch the app details
+            # If it doesn't exist, use the player>getownedgames api to fetch the app details
             else:
-                gameInfo = self.api.getAppDetails(game['appid'])[str(game['appid'])]['data']
-                if gameInfo.get('is_free') == True:
-                    price = 0.00
-                else:
-                    price = float(gameInfo['price_overview'].get('final_formatted').replace('$', ''))
-                # processor.processNewGame(appid, changenum, worker, api)
+                price = None
                 formatGame = {
                     'appid': str(game['appid']),
-                    'name': gameInfo.get('name'),
-                    'current_price': price,
+                    'name': game['name'],
+                    'current_price': None,
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': gameInfo.get('header_image')
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(game['appid']) + '/header.jpg?t=1593505394'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
@@ -167,7 +161,6 @@ class UserOverview(APIView):
         self.getGames()
         self.getVacs()
         self.getUserDetails()
-        print(self.res)
         return Response(self.res)
 
 
@@ -194,10 +187,6 @@ class GetComparedGames(APIView):
         self.sids = []
         self.gameList = []
         self.commonGames = []
-
-        self.worker = SteamWorker()
-        self.worker.login()
-        self.processor = ModelProcessor()
         self.api = SteamApi()
 
     def getGames(self):
@@ -223,6 +212,7 @@ class GetComparedGames(APIView):
         # stores all common appids in var 'out'
         counter = Counter(self.gameList)
         out = [value for value, count in counter.items() if count > 1]
+        print(str(self.gameList))
 
         # Get each game from commongames from db or create it
         for game in out:
@@ -232,20 +222,18 @@ class GetComparedGames(APIView):
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
                     'current_price': str(dbgame.current_price.price),
-                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg',
-                    'slug': str(dbgame.slug)
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg'
                 }
                 self.commonGames.append(formatGame)
             else:
-                newGame = self.processor.processNewGame(
-                    game, 1337, self.worker, self.api)
+                gameInfo = self.api.getAppDetails(game)[str(game)]['data']
+                print(str(gameInfo))
                 # processor.processNewGame(appid, changenum, worker, api)
                 formatGame = {
-                    'appid': str(newGame.appid),
-                    'name': newGame.name,
-                    'current_price': str(newGame.current_price.price),
-                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(newGame.appid) + '/header.jpg',
-                    'slug': str(newGame.slug)
+                    'appid': str(game),
+                    'name': gameInfo.get('name'),
+                    'current_price': None,
+                    'image': gameInfo.get('header_image')
                 }
                 # Append the game to our games list we will pass back
                 self.commonGames.append(formatGame)
