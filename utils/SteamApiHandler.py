@@ -20,6 +20,13 @@ class SteamApi():
         res = req.json()
         return res
 
+    def getAppDetails(self, appid):
+        method = '/appdetails/'
+        url = 'https://store.steampowered.com/api/appdetails/' + self.key + '&appids=' + str(appid) + self.format
+        req = requests.get(url)
+        res = req.json()
+        return res
+
     def getVacInfo(self, steamid):
         method = '/ISteamUser/GetPlayerBans/v1/'
         url = self.baseurl + method + self.key + '&steamids=' + str(steamid) + self.format

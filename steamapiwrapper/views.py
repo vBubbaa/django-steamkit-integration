@@ -93,10 +93,6 @@ class UserOverview(APIView):
         self.vacInfo = []
         self.userDetails = []
         self.libraryCost = 0
-
-        self.worker = SteamWorker()
-        self.worker.login()
-        self.processor = ModelProcessor()
         self.api = SteamApi()
 
 
@@ -110,6 +106,7 @@ class UserOverview(APIView):
         params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid}
         request = requests.get(url, params)
         response = request.json()
+        print('api res' + str(response))
         self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
 
@@ -118,6 +115,7 @@ class UserOverview(APIView):
             if Game.objects.filter(appid=game['appid']).exists():
                 # Get the game
                 dbgame = Game.objects.get(appid=game['appid'])
+                price = dbgame.current_price.price
                 # Grab the information of the game that we need and format it into an object
                 print(dbgame.appid)
                 formatGame = {
@@ -129,27 +127,27 @@ class UserOverview(APIView):
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
-                print('game exists')
-            # If the game does not exist, we will create it using our management create app command,
-            # which uses steamkit to create a model object of the app
+                
+            # If it doesn't exist, use the api to fetch the app details
             else:
-                print('game does not exist')
-                newGame = self.processor.processNewGame(
-                    game['appid'], 1337, self.worker, self.api)
+                gameInfo = self.api.getAppDetails(game['appid'])[str(game['appid'])]['data']
+                if gameInfo.get('is_free') == True:
+                    price = 0.00
+                else:
+                    price = float(gameInfo['price_overview'].get('final_formatted').replace('$', ''))
                 # processor.processNewGame(appid, changenum, worker, api)
                 formatGame = {
-                    'appid': str(newGame.appid),
-                    'name': newGame.name,
-                    'current_price': str(newGame.current_price.price),
+                    'appid': str(game['appid']),
+                    'name': gameInfo.get('name'),
+                    'current_price': price,
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(newGame.appid) + '/' + str(newGame.logo) + '.jpg'
+                    'image': gameInfo.get('header_image')
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
 
-            print(formatGame['current_price'])
-            if formatGame['current_price'] is not None and formatGame['current_price'] != 'None':
-                self.libraryCost += float(formatGame['current_price'])
+            if price is not None and price != 'None':
+                self.libraryCost += float(price)
 
         # Append the game list to the response
         self.res['games'] = self.games
