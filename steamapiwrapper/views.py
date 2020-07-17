@@ -212,7 +212,7 @@ class GetComparedGames(APIView):
         # https://stackoverflow.com/a/15812667
         # stores all common appids in var 'out'
         counter = Counter(self.gameList)
-        out = [value for value, count in counter.items() if count > 1]
+        out = [value for value, count in counter.items() if count == len(self.sids)]
 
         # Get each game from commongames from db or create it
         def threadGames(game):
