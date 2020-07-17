@@ -1,9 +1,13 @@
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
+from django.conf import settings
+import requests
 import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
-import requests
-from django.conf import settings
+# Threading for faster response building
 
 
 class SteamApi():
@@ -22,14 +26,16 @@ class SteamApi():
 
     def getAppDetails(self, appid):
         method = '/appdetails/'
-        url = 'https://store.steampowered.com/api/appdetails/' + self.key + '&appids=' + str(appid) + self.format
+        url = 'https://store.steampowered.com/api/appdetails/' + \
+            self.key + '&appids=' + str(appid) + self.format
         req = requests.get(url)
         res = req.json()
         return res
 
     def getVacInfo(self, steamid):
         method = '/ISteamUser/GetPlayerBans/v1/'
-        url = self.baseurl + method + self.key + '&steamids=' + str(steamid) + self.format
+        url = self.baseurl + method + self.key + \
+            '&steamids=' + str(steamid) + self.format
         req = requests.get(url)
         res = req.json()
         return res
@@ -37,7 +43,8 @@ class SteamApi():
     # Gets a players profile details (personaname, picture, etc.)
     def getUserDetails(self, steamid):
         method = '/ISteamUser/GetPlayerSummaries/v001/'
-        url = self.baseurl + method + self.key + '&steamids=' + str(steamid) + self.format
+        url = self.baseurl + method + self.key + \
+            '&steamids=' + str(steamid) + self.format
         req = requests.get(url)
         res = req.json()
         return res
@@ -53,11 +60,18 @@ class SteamApi():
         friendsRes = response['friendslist']
         friendsInfoList = []
 
-        # Iterate through each steamid in friends list and get the user details for that steamid
-        for f in friendsRes['friends']:
-            friendInfo = self.getUserDetails(f['steamid'])['response']['players']
+        # Thread to append friend to a friend list to be returned
+        def threadFriends(f):
+            friendInfo = self.getUserDetails(
+                f['steamid'])['response']['players']
             friendsInfoList.append(friendInfo)
-            
+
+        with ThreadPoolExecutor(max_workers=32) as executor:
+            if bool(friendsRes['friends']):
+                for f in friendsRes['friends']:
+                    executor.submit(threadFriends, f)
+
+        
         return friendsInfoList
 
     # Gets the price of an app with an appid as a parameter

@@ -166,19 +166,21 @@ class UserOverview(APIView):
 
 class GetFriendList(APIView):
     def __init__(self):
+        print('init')
         self.method = '/ISteamUser/GetFriendList/v0001/'
         # Steamid we will set by the URL parameter @steamid
         self.steamid = None
         self.res = {}
         self.api = SteamApi()
+        print('end init')
 
-    def getGames(self):
+    def getFriends(self):
         friends = self.api.getFriendsList(self.steamid)
         self.res['friends'] = friends
 
     def get(self, request, *args, **kwargs):
         self.steamid = kwargs.get('steamid')
-        self.getGames()
+        self.getFriends()
         return Response(self.res)
 
 
