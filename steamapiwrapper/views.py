@@ -2,6 +2,11 @@ import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
+# Threading for faster response building
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
+
 from collections import Counter
 import requests
 from django.core.management import call_command
@@ -50,7 +55,6 @@ class LocationBuilder(APIView):
                 city = str(f['player'][0]['loccityid'])
 
                 coordinates = self.coordinateBuilder(country, state, city)
-                print(str(coordinates))
                 latitude = str(coordinates[0])
                 longitude = str(coordinates[1])
                 
@@ -116,7 +120,6 @@ class UserOverview(APIView):
                 dbgame = Game.objects.get(appid=game['appid'])
                 price = dbgame.current_price.price
                 # Grab the information of the game that we need and format it into an object
-                print(dbgame.appid)
                 formatGame = {
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
@@ -153,7 +156,6 @@ class UserOverview(APIView):
 
     def getUserDetails(self):
         userDetails = self.api.getUserDetails(self.steamid)
-        print(userDetails)
         self.res['userdetails'] = userDetails
 
     def get(self, request, *args, **kwargs):
@@ -166,13 +168,11 @@ class UserOverview(APIView):
 
 class GetFriendList(APIView):
     def __init__(self):
-        print('init')
         self.method = '/ISteamUser/GetFriendList/v0001/'
         # Steamid we will set by the URL parameter @steamid
         self.steamid = None
         self.res = {}
         self.api = SteamApi()
-        print('end init')
 
     def getFriends(self):
         friends = self.api.getFriendsList(self.steamid)
@@ -197,7 +197,6 @@ class GetComparedGames(APIView):
     # Processes the SID parameters so we can get a compared list going
     def processIdParams(self, sids):
         for k, v in sids.items():
-            print('SID: ' + v)
             self.sids.append(v)
         return self.sids
 
@@ -214,10 +213,9 @@ class GetComparedGames(APIView):
         # stores all common appids in var 'out'
         counter = Counter(self.gameList)
         out = [value for value, count in counter.items() if count > 1]
-        print(str(self.gameList))
 
         # Get each game from commongames from db or create it
-        for game in out:
+        def threadGames(game):
             if Game.objects.filter(appid=game).exists():
                 dbgame = Game.objects.get(appid=game)
                 formatGame = {
@@ -230,7 +228,6 @@ class GetComparedGames(APIView):
             else:
                 try:
                     gameInfo = self.api.getAppDetails(game)[str(game)]['data']
-                    print(str(gameInfo))
                     # processor.processNewGame(appid, changenum, worker, api)
                     formatGame = {
                         'appid': str(game),
@@ -243,6 +240,10 @@ class GetComparedGames(APIView):
                 except:
                     pass
 
+        with ThreadPoolExecutor(max_workers=32) as executor:
+            if bool(out):
+                for game in out:
+                    executor.submit(threadGames, game)
 
     def get(self, request, *args, **kwargs):
         self.processIdParams(request.query_params)

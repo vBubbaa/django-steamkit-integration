@@ -1,14 +1,14 @@
-import threading
-from concurrent.futures import ThreadPoolExecutor
-from concurrent import futures
-from django.conf import settings
-import requests
 import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
-# Threading for faster response building
+from django.conf import settings
+import requests
 
+# Threading for faster response building
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
 
 class SteamApi():
     def __init__(self):
@@ -66,6 +66,7 @@ class SteamApi():
                 f['steamid'])['response']['players']
             friendsInfoList.append(friendInfo)
 
+        # Excute friend loop with threading to speed up the requests
         with ThreadPoolExecutor(max_workers=32) as executor:
             if bool(friendsRes['friends']):
                 for f in friendsRes['friends']:
