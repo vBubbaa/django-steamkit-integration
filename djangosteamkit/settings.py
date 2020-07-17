@@ -20,7 +20,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SC_SECRET_KEY')
 
-STEAM_API_KEY = '29ADA8FE335052FE66A32EEB043ABA31'
+STEAM_API_KEY = '88858A1C0CAAE1FB4D3167905162BD13'
 STEAM_ROOT_ENDPOINT = 'http://api.steampowered.com'
 
 LOGIN_REDIRECT_URL = '/'

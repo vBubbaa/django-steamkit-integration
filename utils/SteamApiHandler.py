@@ -12,7 +12,7 @@ from concurrent import futures
 
 class SteamApi():
     def __init__(self):
-        self.key = '?key=29ADA8FE335052FE66A32EEB043ABA31'
+        self.key = '?key=88858A1C0CAAE1FB4D3167905162BD13'
         self.baseurl = 'http://api.steampowered.com'
         self.format = '&format=json'
 
@@ -67,7 +67,7 @@ class SteamApi():
             friendsInfoList.append(friendInfo)
 
         # Excute friend loop with threading to speed up the requests
-        with ThreadPoolExecutor(max_workers=32) as executor:
+        with ThreadPoolExecutor(max_workers=8) as executor:
             if bool(friendsRes['friends']):
                 for f in friendsRes['friends']:
                     executor.submit(threadFriends, f)

@@ -240,7 +240,7 @@ class GetComparedGames(APIView):
                 except:
                     pass
 
-        with ThreadPoolExecutor(max_workers=32) as executor:
+        with ThreadPoolExecutor(max_workers=8) as executor:
             if bool(out):
                 for game in out:
                     executor.submit(threadGames, game)
