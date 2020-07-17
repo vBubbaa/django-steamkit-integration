@@ -226,17 +226,21 @@ class GetComparedGames(APIView):
                 }
                 self.commonGames.append(formatGame)
             else:
-                gameInfo = self.api.getAppDetails(game)[str(game)]['data']
-                print(str(gameInfo))
-                # processor.processNewGame(appid, changenum, worker, api)
-                formatGame = {
-                    'appid': str(game),
-                    'name': gameInfo.get('name'),
-                    'current_price': None,
-                    'image': gameInfo.get('header_image')
-                }
-                # Append the game to our games list we will pass back
-                self.commonGames.append(formatGame)
+                try:
+                    gameInfo = self.api.getAppDetails(game)[str(game)]['data']
+                    print(str(gameInfo))
+                    # processor.processNewGame(appid, changenum, worker, api)
+                    formatGame = {
+                        'appid': str(game),
+                        'name': gameInfo.get('name'),
+                        'current_price': None,
+                        'image': gameInfo.get('header_image')
+                    }
+                    # Append the game to our games list we will pass back
+                    self.commonGames.append(formatGame)
+                except:
+                    pass
+
 
     def get(self, request, *args, **kwargs):
         self.processIdParams(request.query_params)
