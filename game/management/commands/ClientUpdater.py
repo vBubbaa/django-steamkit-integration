@@ -4,10 +4,8 @@ gevent.monkey.patch_ssl()
 
 import time
 from django.core.management.base import BaseCommand, CommandError
-from utils.ModelProcessor import ModelProcessor
 from utils.client import SteamWorker
-from utils.SteamApiHandler import SteamApi
-from game.models import Game
+from game.models import Game, Task
 
 
 """
@@ -24,12 +22,6 @@ class Command(BaseCommand):
         # Steamkit client
         worker = SteamWorker()
         worker.login()
-
-        # Our model processor to process games
-        processor = ModelProcessor()
-
-        # Api object to handle api calls (needed for our model processor class)
-        api = SteamApi()
 
         """
         - This function grabs the current change number that the steam client is on
@@ -62,12 +54,17 @@ class Command(BaseCommand):
                     if (Game.objects.filter(appid=change.appid).exists()):
                         print("Game exists")
                         appid = change.appid
-                        processor.processExistingGame(appid, change.change_number, worker, api)
+                        # Create a task to edit the existing app
+                        Task.objects.create(appid=appid, changenumber=change.change_number, action='existing')
+                        print('Task for existing game created @@@@@@@@')
                     # If app doesnt exist, create it
                     else:
                         print('Game does not exist')
                         appid = change.appid
-                        processor.processNewGame(appid, change.change_number, worker, api)
+                        # Create a task to add the new app
+                        Task.objects.create(appid=appid, changenumber=change.change_number, action='new')
+                        print('Task for new game created @@@@@@@@')
+
 
                 # Sets the next change number to the current, so we can check for the next change number
                 currentChangeNumber = getCurrentChangeNumber()

@@ -156,3 +156,31 @@ class Category(models.Model):
 
     def __str__(self):
         return self.category_description
+
+# Tasking model to create a task object
+# Task object contains information needed to process an app with our steamkit utils
+# @params: appid, changenumber, process-action (creation of object, or edit of existing object [in our datbase])
+# The tasks are created for a minimal queuing system for creation of apps
+# We have a management command `python manage.py taskupdater` that scans for tasks every 5 second and if there are any tasks
+# we start processing each task
+
+
+class Task(models.Model):
+    # Is the app a new app, or an existing app in our database?
+    NEW = 'new'
+    EXISTING = 'existing'
+    ACTION_CHOICES = (
+        (NEW, 'new app'),
+        (EXISTING, 'existing app')
+    )
+
+    appid = models.IntegerField()
+    changenumber = models.IntegerField()
+    action = models.CharField(
+        choices=ACTION_CHOICES,
+        default=NEW,
+        max_length=32
+    )
+
+    def __str__(self):
+        return str(self.appid) + ' ' + self.action + ' task'
