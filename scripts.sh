@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/django-steamkit-integration
+cd /root/django-steamkit-integration
 
-python3 manage.py ClientUpdater
-python3 manage.py TaskUpdater
+/usr/lib/python3.6 ./manage.py ClientUpdater
+/usr/lib/python3.6 ./manage.py TaskUpdater
