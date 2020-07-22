@@ -133,7 +133,7 @@ class UserOverview(APIView):
             # If it doesn't exist, use the player>getownedgames api to fetch the app details
             else:
                 # Create a new task to process the app into our database
-                Task.objects.create(appid = str(game['appid']), action='new', changenumber=1337)
+                Task.objects.create(appid = str(game['appid']), changenumber=1337)
                 price = None
                 formatGame = {
                     'appid': str(game['appid']),
@@ -229,7 +229,7 @@ class GetComparedGames(APIView):
                 self.commonGames.append(formatGame)
             else:
                 # Create a new task to process the app into our database
-                Task.objects.create(appid = str(game), action='new', changenumber=1337)
+                Task.objects.create(appid = str(game), changenumber=1337)
                 try:
                     gameInfo = self.api.getAppDetails(game)[str(game)]['data']
                     # processor.processNewGame(appid, changenum, worker, api)
