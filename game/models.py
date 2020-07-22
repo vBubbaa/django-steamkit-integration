@@ -166,21 +166,12 @@ class Category(models.Model):
 
 
 class Task(models.Model):
-    # Is the app a new app, or an existing app in our database?
-    NEW = 'new'
-    EXISTING = 'existing'
-    ACTION_CHOICES = (
-        (NEW, 'new app'),
-        (EXISTING, 'existing app')
-    )
-
     appid = models.IntegerField()
     changenumber = models.IntegerField()
-    action = models.CharField(
-        choices=ACTION_CHOICES,
-        default=NEW,
-        max_length=32
-    )
+    # Is it currently being processed?
+    processing = models.BooleanField(default=False)
+    # Is it pending in the queue?
+    pending = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.appid) + ' ' + self.action + ' task'
+        return str(self.appid) + ' ' + ' task'

@@ -35,13 +35,17 @@ class Command(BaseCommand):
             if Task.objects.all():
                 # Loop through each task and start processing them
                 for task in Task.objects.all():
-                    if task.action == 'new':
-                        print('task is new app')
-                        processor.processNewGame(task.appid, task.changenumber, worker, api)
-                        task.delete()
-                    else:
-                        print('task is existing app')
+                    # If the app already exists, we update it with processExistingGame()
+                    if Game.objects.filter(appid=task.appid).exists():
+                        print('task is an existing app')
+                        task.processing = True
                         processor.processExistingGame(task.appid, task.changenumber, worker, api)
+                        task.delete()
+                    # if the app doesn't exist, we create a new app with processNewGame
+                    else:
+                        print('task is New app')
+                        task.processing = True
+                        processor.processNewGame(task.appid, task.changenumber, worker, api)
                         task.delete()
             else:
                 print('Task model has NO tasks')

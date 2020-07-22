@@ -42,28 +42,13 @@ class Command(BaseCommand):
             # Sets the changes to always be at the current change number in our script
             changes = worker.get_changes(currentChangeNumber)
 
-            print('after change declaration hit')
-
             # If no new changes
             if (currentChangeNumber != getCurrentChangeNumber()):
-                print("Changes have occured")
-                print('Changes: ' + str(changes))
                 for change in changes.app_changes:
                     print("App Change: " + str(change.appid))
-                    # If App exists, update it
-                    if (Game.objects.filter(appid=change.appid).exists()):
-                        print("Game exists")
-                        appid = change.appid
-                        # Create a task to edit the existing app
-                        Task.objects.create(appid=appid, changenumber=change.change_number, action='existing')
-                        print('Task for existing game created @@@@@@@@')
-                    # If app doesnt exist, create it
-                    else:
-                        print('Game does not exist')
-                        appid = change.appid
-                        # Create a task to add the new app
-                        Task.objects.create(appid=appid, changenumber=change.change_number, action='new')
-                        print('Task for new game created @@@@@@@@')
+                    appid = change.appid
+                    # Create a task to edit the existing app
+                    Task.objects.create(appid=appid, changenumber=change.change_number)
 
 
                 # Sets the next change number to the current, so we can check for the next change number
