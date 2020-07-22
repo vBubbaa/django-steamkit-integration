@@ -1,6 +1,12 @@
 #!/bin/bash
 
+## Crontab Config: 
+## @reboot . $HOME/.profile; /root/django-steamkit-integration/scripts.sh > /root/cronjob.log 2>&1
+
+source /root/django-steamkit-integration/scenv/bin/activate
+
 cd /root/django-steamkit-integration
 
-python3 ./manage.py ClientUpdater
-python3 ./manage.py TaskUpdater
+/root/django-steamkit-integration/scenv/bin/python3.7 manage.py ClientUpdater >$
+/root/django-steamkit-integration/scenv/bin/python3.7 manage.py TaskUpdater >> $
+
