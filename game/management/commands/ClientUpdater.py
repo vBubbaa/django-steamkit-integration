@@ -47,8 +47,10 @@ class Command(BaseCommand):
                 for change in changes.app_changes:
                     print("App Change: " + str(change.appid))
                     appid = change.appid
-                    # Create a task to edit the existing app
-                    Task.objects.create(appid=appid, changenumber=change.change_number)
+                    # If a task for the app already exists, dont create another task
+                    if not Task.objects.filter(appid=appid).exists():
+                        # Create a task to edit the existing app
+                        Task.objects.create(appid=appid, changenumber=change.change_number)
 
 
                 # Sets the next change number to the current, so we can check for the next change number
