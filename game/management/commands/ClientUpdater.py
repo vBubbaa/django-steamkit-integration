@@ -30,6 +30,7 @@ class Command(BaseCommand):
         def getCurrentChangeNumber():
             changes = worker.get_changes(1)
             currentChangeNum = changes.current_change_number
+            print(str(currentChangeNum))
             return currentChangeNum
 
         # The current change number out script is on
@@ -42,23 +43,26 @@ class Command(BaseCommand):
             # Sets the changes to always be at the current change number in our script
             changes = worker.get_changes(currentChangeNumber)
 
-            # If no new changes
-            if (currentChangeNumber != getCurrentChangeNumber()):
-                for change in changes.app_changes:
-                    print("App Change: " + str(change.appid))
-                    appid = change.appid
-                    # If a task for the app already exists, dont create another task
-                    if not Task.objects.filter(appid=appid).exists():
-                        # Create a task to edit the existing app
-                        Task.objects.create(appid=appid, changenumber=change.change_number)
+            try:
+                # If no new changes
+                if (currentChangeNumber != getCurrentChangeNumber()):
+                    for change in changes.app_changes:
+                        print("App Change: " + str(change.appid))
+                        appid = change.appid
+                        # If a task for the app already exists, dont create another task
+                        if not Task.objects.filter(appid=appid).exists():
+                            # Create a task to edit the existing app
+                            Task.objects.create(appid=appid, changenumber=change.change_number)
 
 
-                # Sets the next change number to the current, so we can check for the next change number
-                currentChangeNumber = getCurrentChangeNumber()
-                print('current change num after actions ' +
-                      str(currentChangeNumber))
+                    # Sets the next change number to the current, so we can check for the next change number
+                    currentChangeNumber = getCurrentChangeNumber()
+                    print('current change num after actions ' +
+                        str(currentChangeNumber))
 
-            else:
-                print("No Changes")
+                else:
+                    print("No Changes")
+            except Exception as e:
+                print("Error at game " + str(appid) + "at changenumber: " + str(currentChangeNumber))
 
             time.sleep(10)
