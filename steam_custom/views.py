@@ -35,7 +35,7 @@ if os.environ.get('SC_SERVER') == 'dev':
         settings, 'STEAM_REDIRECT_URL', 'http://127.0.0.1:8080')
 else:
     STEAM_REDIRECT_URL = getattr(
-        settings, 'STEAM_REDIRECT_URL', 'http://steamcomparer.com')
+        settings, 'STEAM_REDIRECT_URL', 'https://steamcomparer.com')
 
 
 class SteamCustomOpenIDLoginView(OpenIDLoginView):

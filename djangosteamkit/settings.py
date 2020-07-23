@@ -7,7 +7,7 @@ if os.environ.get('SC_SERVER') == 'dev':
     STEAM_REDIRECT_URL = 'http://127.0.0.1:8080'
 else:
     from .production import *
-    STEAM_REDIRECT_URL = 'http://steamcomparer.com'
+    STEAM_REDIRECT_URL = 'https://steamcomparer.com'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
