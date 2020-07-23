@@ -36,12 +36,6 @@ class ModelProcessor():
                 appid=appid
             )
 
-        elif ('apps' not in req): 
-            print('ERROR: ' + str(appid) + ' has no req["apps"] section.')
-
-        elif ('appinfo' not in req['apps'][0]): 
-            print('ERROR: ' + str(appid) + ' has no req["apps"][0]["appinfo"] section.')
-
         # Else, the game has information in common section
         else:
             # New Game Declaration for non relationship fields and non-multiple fields
