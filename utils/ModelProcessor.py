@@ -29,12 +29,15 @@ class ModelProcessor():
         # Set changenumber
         self.changenum = changenum
 
-        # Some games get added with no info, so just add it to the db with the appid
-        if 'common' not in req['apps'][0]['appinfo']:
-            print('no common section' + str(req))
-            game = Game(
-                appid=appid
-            )
+        try:
+            # Some games get added with no info, so just add it to the db with the appid
+            if 'common' not in req['apps'][0]['appinfo']:
+                print('no common section' + str(req))
+                game = Game(
+                    appid=appid
+                )
+        except:
+            print('Request is empty "ERROR" no ["apps"], ["0"], ["appinfo"]')
 
         # Else, the game has information in common section
         else:
