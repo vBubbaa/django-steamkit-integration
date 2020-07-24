@@ -319,26 +319,31 @@ class ModelProcessor():
     def processExistingGame(self, appid, changenum, worker, api):
         # Grab the game info from the steamkit worker
         gameInfo = worker.get_product_info(appids=[appid])
-        gameInfo = gameInfo['apps'][0]['appinfo']['common']
 
-        # Set changenumber
-        self.changenum = changenum
+        if 'common' in gameInfo['apps'][0]['appinfo']:
+            gameInfo = gameInfo['apps'][0]['appinfo']['common']
 
-        # Grab the game object we are checking for changes on
-        game = Game.objects.get(appid=appid)
+            # Set changenumber
+            self.changenum = changenum
 
-        # Checks to make
-        self.easyCheckFields(game, gameInfo)
-        self.intCheckFields(game, gameInfo)
-        self.boolFieldChecks(game, gameInfo)
-        self.priceChangeCheck(game, api.priceRequest(game.appid))
-        self.categoryUpdate(game, gameInfo, api)
-        self.genreUpdate(game, gameInfo, api)
-        self.primaryGenreUpdate(game, gameInfo, api)
-        self.associationsUpdate(game, gameInfo)
-        self.appTypeUpdate(game, gameInfo)
-        self.osListUpdate(game, gameInfo)
-        self.languageUpdate(game, gameInfo)
+            # Grab the game object we are checking for changes on
+            game = Game.objects.get(appid=appid)
+
+            # Checks to make
+            self.easyCheckFields(game, gameInfo)
+            self.intCheckFields(game, gameInfo)
+            self.boolFieldChecks(game, gameInfo)
+            self.priceChangeCheck(game, api.priceRequest(game.appid))
+            self.categoryUpdate(game, gameInfo, api)
+            self.genreUpdate(game, gameInfo, api)
+            self.primaryGenreUpdate(game, gameInfo, api)
+            self.associationsUpdate(game, gameInfo)
+            self.appTypeUpdate(game, gameInfo)
+            self.osListUpdate(game, gameInfo)
+            self.languageUpdate(game, gameInfo)
+        
+        else:
+            print('No common section for existing app, skipping.. ' + str(appid))
 
     # Checks all non relational string represented fields (ex. name, release_state, icon, etc.)
     def easyCheckFields(self, game, gameInfo):
