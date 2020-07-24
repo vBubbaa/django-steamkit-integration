@@ -153,7 +153,7 @@ class UserOverview(APIView):
 
         # Append the game list to the response
         self.res['games'] = self.games
-        self.res['libcost'] = self.libraryCost
+        self.res['libcost'] = round(self.libraryCost, 2)
 
     def getVacs(self):
         vacs = self.api.getVacInfo(self.steamid)
