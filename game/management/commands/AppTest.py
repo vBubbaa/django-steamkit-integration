@@ -19,7 +19,7 @@ Usage:
 class Command(BaseCommand):
     def handle(self, *args, **options):
         # Appid to work with (either create new app in db, or edit update app)
-        appid = 420110
+        appid = 730
 
         # Necessary objects we need to process app from steamkit
         # - api handler
@@ -35,4 +35,4 @@ class Command(BaseCommand):
 
         # Call processNewGame, or processExistingGame depending on you want to create
         # a new app in the db, or update and existing app in the DB
-        processor.processNewGame(appid, changenum, worker, api)
+        processor.processExistingGame(appid, changenum, worker, api)

@@ -37,13 +37,13 @@ class Command(BaseCommand):
                 for task in Task.objects.all():
                     # If the app already exists, we update it with processExistingGame()
                     if Game.objects.filter(appid=task.appid).exists():
-                        print('task is an existing app')
+                        print('task is an existing app | appid: ' + str(task.appid))
                         task.processing = True
                         processor.processExistingGame(task.appid, task.changenumber, worker, api)
                         task.delete()
                     # if the app doesn't exist, we create a new app with processNewGame
                     else:
-                        print('task is New app')
+                        print('task is New app | appid: ' + str(task.appid))
                         task.processing = True
                         processor.processNewGame(task.appid, task.changenumber, worker, api)
                         task.delete()

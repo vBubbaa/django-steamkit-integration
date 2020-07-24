@@ -394,11 +394,8 @@ class ModelProcessor():
 
         for field in intFieldChecks:
             if gameInfo.get(field):
-                # If the chars are equal, no change has happened
-                if int(getattr(game, field)) == int(gameInfo[field]):
-                    pass
-                # Else, a change did occur for a field so return the new val so we can set it in our DB
-                else:
+                # Check if db val is none or db val != new val from response
+                if (getattr(game, field) is None or int(getattr(game, field)) != int(gameInfo[field])):
                     outdatedVal = getattr(game, field)
                     if gameInfo[field] is not None:
                         setattr(game, field, int(gameInfo[field]))
@@ -429,11 +426,8 @@ class ModelProcessor():
 
         for field in boolFieldChecks:
             if gameInfo.get(field):
-                # If the chars are equal, no change has happened
-                if bool(getattr(game, field)) == bool(gameInfo[field]):
-                    pass
-                # Else, a change did occur for a field so return the new val so we can set it in our DB
-                else:
+                # Check if db val is none or db val != new val from response
+                if (getattr(game, field) is None or bool(getattr(game, field)) != bool(gameInfo[field])):
                     outdatedVal = getattr(game, field)
                     print('bool field changed...')
                     if gameInfo[field] is not None:
