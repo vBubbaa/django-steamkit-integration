@@ -402,10 +402,14 @@ class ModelProcessor():
                     else:
                         setattr(game, field, None)
                     game.save()
-
-                    payload = str(field) + ' updated: ' + \
-                        str(int(outdatedVal)) + ' => ' + \
-                        str(int(gameInfo[field]))
+                    if outdatedVal != None:
+                        payload = str(field) + ' updated: ' + \
+                            str(int(outdatedVal)) + ' => ' + \
+                            str(int(gameInfo[field]))
+                    else:
+                        payload = str(field) + ' updated: ' + \
+                            'None => ' + \
+                            str(int(gameInfo[field]))
                     gameChange = GameChange(
                         change_number=self.changenum,
                         game=game,
@@ -436,9 +440,15 @@ class ModelProcessor():
                         setattr(game, field, None)
                     game.save()
 
-                    payload = str(field) + ' updated: ' + \
-                        str(bool(outdatedVal)) + ' => ' + \
-                        str(bool(gameInfo[field]))
+                    if outdatedVal is not None:
+                        payload = str(field) + ' updated: ' + \
+                            str(bool(outdatedVal)) + ' => ' + \
+                            str(bool(gameInfo[field]))
+                    else:
+                        payload = str(field) + ' updated: ' + \
+                            'None => ' + \
+                            str(bool(gameInfo[field]))
+                    
                     gameChange = GameChange(
                         change_number=self.changenum,
                         game=game,
