@@ -320,7 +320,12 @@ class ModelProcessor():
         # Grab the game info from the steamkit worker
         gameInfo = worker.get_product_info(appids=[appid])
 
-        if 'common' in gameInfo['apps'][0]['appinfo']:
+        # Check if app section exists, if it doesn't dont try and process the app
+        if 'apps' not in gameInfo:
+            print('ERROR | ' + str(appid) + ' has no gameInfo["apps"] section. Response --> ' + str(gameInfo) )
+
+        # Check if the common section exists, if it doesn process the common fields
+        elif 'common' in gameInfo['apps'][0]['appinfo']:
             gameInfo = gameInfo['apps'][0]['appinfo']['common']
 
             # Set changenumber
@@ -342,6 +347,7 @@ class ModelProcessor():
             self.osListUpdate(game, gameInfo)
             self.languageUpdate(game, gameInfo)
         
+        # Game doesn't have a common section, skip.
         else:
             print('No common section for existing app, skipping.. ' + str(appid))
 
