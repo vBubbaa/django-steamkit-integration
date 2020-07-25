@@ -91,6 +91,7 @@ class UserOverview(APIView):
         self.method = '/IPlayerService/GetOwnedGames/v001'
         # Passed back res with all games parsed with correct information from out database
         self.res = {}
+        self.isPrivate = False
         # Steamid we will set by the URL parameter @steamid
         self.steamid = None
         self.games = []
@@ -110,6 +111,7 @@ class UserOverview(APIView):
         params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
         request = requests.get(url, params)
         response = request.json()
+        print('getGames res: ' + str(response))
         self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
 
@@ -157,17 +159,22 @@ class UserOverview(APIView):
 
     def getVacs(self):
         vacs = self.api.getVacInfo(self.steamid)
+        print('vac res: ' + str(vacs))
         self.res['vacinfo'] = vacs
 
     def getUserDetails(self):
         userDetails = self.api.getUserDetails(self.steamid)
+        if userDetails['response']['players']['player'][0].get('communityvisibilitystate') == 1:
+            self.isPrivate = True
+            self.res['private'] = True
         self.res['userdetails'] = userDetails
 
     def get(self, request, *args, **kwargs):
         self.steamid = kwargs.get('steamid')
-        self.getGames()
-        self.getVacs()
         self.getUserDetails()
+        self.getVacs()
+        if self.isPrivate != True:
+            self.getGames()
         return Response(self.res)
 
 
@@ -192,8 +199,10 @@ class GetFriendList(APIView):
 class GetComparedGames(APIView):
     def __init__(self):
         self.sids = []
+        self.privateFriends = []
         self.gameList = []
         self.commonGames = []
+        self.res = {}
         self.api = SteamApi()
 
     def getGames(self):
@@ -210,9 +219,14 @@ class GetComparedGames(APIView):
         for sid in self.sids:
             # Get their game app library
             userLib = self.api.getUserLibrary(sid)
-            # Loop through each game and append it to the game list
-            for game in userLib['response']['games']:
-                self.gameList.append(game['appid'])
+            try:
+                # Loop through each game and append it to the game list
+                for game in userLib['response']['games']:
+                    self.gameList.append(game['appid'])
+            except KeyError:
+                self.privateFriends.append(sid)
+
+        self.res['privateFriends'] = self.privateFriends
 
         # https://stackoverflow.com/a/15812667
         # stores all common appids in var 'out'
@@ -254,7 +268,9 @@ class GetComparedGames(APIView):
                 for game in out:
                     executor.submit(threadGames, game)
 
+        self.res['commonGames'] = self.commonGames
+
     def get(self, request, *args, **kwargs):
         self.processIdParams(request.query_params)
         self.getCommonGames()
-        return Response(self.commonGames)
+        return Response(self.res)
