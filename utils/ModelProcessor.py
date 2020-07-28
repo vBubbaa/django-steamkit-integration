@@ -471,8 +471,8 @@ class ModelProcessor():
 
     def priceChangeCheck(self, game, apiPrice):
         # Check if current price matches the current price in the DB
-        if game.current_price.price != apiPrice:
-            print('price mismatch')
+        if float(game.current_price.price) != float(apiPrice):
+            print('Price Mismatch')
             # Create a new price object
             price = Price(
                 price=apiPrice
