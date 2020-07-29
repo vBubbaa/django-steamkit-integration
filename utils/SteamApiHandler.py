@@ -104,6 +104,7 @@ class SteamApi():
     # Ex. Category, genre, etc.
     # Steamkit only returns a numerical tag id, not the tag name
     def tag_request(self, appid, tag_type, tag_ids):
+        print('tag request')
         try:
             # Initial request and response
             tagRequest = requests.get(

@@ -36,10 +36,10 @@ class ModelProcessor():
                 appid=appid
             )
 
-        elif ('apps' not in req): 
+        elif ('apps' not in req):
             print('ERROR: ' + str(appid) + ' has no req["apps"] section.')
 
-        elif ('appinfo' not in req['apps'][0]): 
+        elif ('appinfo' not in req['apps'][0]):
             print('ERROR: ' + str(appid) + ' has no req["apps"][0] section.')
 
         # Else, the game has information in common section
@@ -322,7 +322,8 @@ class ModelProcessor():
 
         # Check if app section exists, if it doesn't dont try and process the app
         if 'apps' not in gameInfo:
-            print('ERROR | ' + str(appid) + ' has no gameInfo["apps"] section. Response --> ' + str(gameInfo) )
+            print('ERROR | ' + str(appid) +
+                  ' has no gameInfo["apps"] section. Response --> ' + str(gameInfo))
 
         # Check if the common section exists, if it doesn process the common fields
         elif 'common' in gameInfo['apps'][0]['appinfo']:
@@ -346,7 +347,7 @@ class ModelProcessor():
             self.appTypeUpdate(game, gameInfo)
             self.osListUpdate(game, gameInfo)
             self.languageUpdate(game, gameInfo)
-        
+
         # Game doesn't have a common section, skip.
         else:
             print('No common section for existing app, skipping.. ' + str(appid))
@@ -454,7 +455,7 @@ class ModelProcessor():
                         payload = str(field) + ' updated: ' + \
                             'None => ' + \
                             str(bool(gameInfo[field]))
-                    
+
                     gameChange = GameChange(
                         change_number=self.changenum,
                         game=game,
@@ -499,90 +500,73 @@ class ModelProcessor():
 
     def categoryUpdate(self, game, gameInfo, api):
         categories = gameInfo.get('category', None)
+        tagRequest = None
+        print(str(categories))
+        catList = []
+        catNames = []
 
         if categories is not None:
-            catList = []
-            for cat in categories:
-                catList.append(cat.split('_')[1])
-            catRes = api.tag_request(str(game.appid), 'categories', catList)
-            catList = []
+            # Loop categories in response
+            for category in categories:
+                # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
+                catList.append(category.split('_')[1])
+                c = int(category.split('_')[1])
+                # #
+                # Check if the category exists in our DB, if it doesnt: create it!
+                if Category.objects.filter(category_id=c).exists():
+                    c = Category.objects.get(category_id=c)
+                    print(c.category_description + ' exists in our database')
+                # The category doesn't exist in our database yet, lets create it!
+                else:
+                    print(str(c) + ' does not exist in our database')
+                    # Check if we already got the categories via the api.
+                    if tagRequest is None:
+                        # If we haven't yet done a tag request (i.e our API handler tagRequest())
+                        tagRequest = api.tag_request(
+                            str(game.appid), 'categories', catList)
+                        print('Tag Request Response: ' + str(tagRequest))
 
-            if catRes is not None:
-                # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-                for item in catRes:
-                    for k, v in item.items():
-                        # When the key is ID, check if that genre exists in our genre model
-                        if (k == 'id'):
-                            if Category.objects.filter(category_id=v).exists():
-                                category = Category.objects.get(category_id=v)
-                                # Check if category is associated with the game
-                                if game.categories.filter(category_id=v).exists():
-                                    print(
-                                        'Category is already assocated with the game')
-                                else:
-                                    game.categories.add(category)
+                    # Now, we know that the tagrequest is already there and we can process the tag descriptions.
+                    #
+                    # Filter the tagRequest list for category matching the ID from steamkit response
+                    filteredItem = [
+                        cat for cat in tagRequest if cat['id'] == c]
+                    # Create the category object
+                    c = Category.objects.create(
+                        category_id=c, category_description=filteredItem[0]['description'])
+                    print('Category created: ' + c.category_description)
+                # #
+                # Now, lets check and see if the category is associated with our game
+                # If the category isn't associated with the game, associate it.
+                if not game.categories.filter(category_id=c.category_id).exists():
+                    print(c.category_description +
+                          ' is not associated with the game')
+                    game.categories.add(c)
 
-                                    payload = 'Added ' + category.category_description + \
-                                        ' to ' + game.name + '\'s categories'
-                                    gameChange = GameChange(
-                                        change_number=self.changenum,
-                                        game=game,
-                                        changelog=GameChange.changelog_builder(
-                                            GameChange.UPDATE,
-                                            game.appid,
-                                            payload=payload
-                                        ),
-                                        action=GameChange.UPDATE
-                                    )
-                                    gameChange.save()
-                            else:
-                                # If the genre doesn't exist in our genre model, create it
-                                category = Category.objects.create(
-                                    category_id=v)
+                    # Create a changelog for adding a category to the game.
+                    payload = 'Added ' + c.category_description + \
+                        ' to ' + game.name + '\'s categories'
+                    gameChange = GameChange(
+                        change_number=self.changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
 
-                        elif (k == 'description'):
-                            # If the desciption for the genre is not yet set, set it and associate game with the genre
-                            if not category.category_description:
-                                print('category v ' + v)
-                                category.category_description = v
-                                category.save()
-
-                                payload = 'Added ' + category.category_description + ' category to the database'
-                                gameChange = GameChange(
-                                    change_number=self.changenum,
-                                    game=game,
-                                    changelog=GameChange.changelog_builder(
-                                        GameChange.UPDATE,
-                                        game.appid,
-                                        payload=payload
-                                    ),
-                                    action=GameChange.UPDATE
-                                )
-                                gameChange.save()
-
-                                game.categories.add(category)
-
-                                payload = 'Added ' + category.category_description + \
-                                    ' to ' + game.name + '\'s categories'
-                                gameChange = GameChange(
-                                    change_number=self.changenum,
-                                    game=game,
-                                    changelog=GameChange.changelog_builder(
-                                        GameChange.UPDATE,
-                                        game.appid,
-                                        payload=payload
-                                    ),
-                                    action=GameChange.UPDATE
-                                )
-                                gameChange.save()
-
-                        catList.append(category.category_description)
-
-                        game.save()
-
-                # Remove categories not in the list anymore (got removed)
+                # #
+                # Let's add the category name to list so that we can compare that list to the game's list of categories
+                # and see if any categories have been removed.
+                catNames.append(c.category_description)
+                # #
+                # Now, let's check and see if any categories have been removed from the response
                 for category in game.categories.all():
-                    if category.category_description not in catList:
+                    # if the category in our DB isn't in the steamkit list of category names remove it + create changelog
+                    if category.category_description not in catNames:
                         game.categories.remove(category)
                         game.save()
 
