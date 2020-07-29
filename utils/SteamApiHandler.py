@@ -112,18 +112,6 @@ class SteamApi():
             tagRequest = tagRequest.json()
             # Grab the tag type we are fetching (ex. genre, category)
             request = tagRequest.get(appid)['data'][tag_type]
-            # Empty list we will return a list of dicts with the id AND (needed =>) description
-            returnList = []
-
-            # For each tag we need to get the description for
-            for tag in tag_ids:
-                # For each item in the request res, (each item in the list of dicts)
-                for item in request:
-                    # For key and value in items (ex. 'id': 1, 'description': 'Action')
-                    for k, v in item.items():
-                        # If the key is 'id' (not description) append the entire dict back (which contains description)
-                        if (k == 'id' and str(v) == tag):
-                            returnList.append(item)
 
             # Return Fomrat (list of dicts with the id and description):
             # [
@@ -132,7 +120,7 @@ class SteamApi():
             # ]
             #
 
-            return returnList
+            return request
 
         except Exception as e:
             print('Oopsies, something went wrong with Tag Request for appid ... ' +
