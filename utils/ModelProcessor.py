@@ -250,8 +250,28 @@ class ModelProcessor():
     def processPrimaryGenre(self, req, game, api):
         pg = req['apps'][0]['appinfo']['common'].get(
             'primary_genre', None)
-
+        tagRequest = None
+        genreList = []
         print('Primary genre from steamkit: ' + str(pg))
+
+        # Check for steamkit res existance of PG
+        if pg is not None:
+            if Genre.objects.filter(genre_id=pg).exists():
+                g = Genre.objects.get(genre_id=pg)
+                print('PG exists in our DB: ' + g.genre_description)
+            else:
+                print('PG does not exist in DB: ' + str(pg))
+                if tagRequest is None:
+                    tagRequest = api.tag_request(
+                        str(game.appid), 'genres', genreList)
+                    print('Genre tag response via API: ' + str(tagRequest))
+
+                filteredItem = [
+                    prim for prim in tagRequest if prim['id'] == str(pg)]
+                g = Genre.objects.create(
+                    genre_id=pg, genre_description=filteredItem[0]['description'])
+
+            game.primary_genre = g
 
         # if pg is not None:
         #     tagList = []
