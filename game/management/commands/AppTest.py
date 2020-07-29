@@ -35,4 +35,4 @@ class Command(BaseCommand):
 
         # Call processNewGame, or processExistingGame depending on you want to create
         # a new app in the db, or update and existing app in the DB
-        processor.processNewGame(appid, changenum, worker, api)
+        processor.processExistingGame(appid, changenum, worker, api)

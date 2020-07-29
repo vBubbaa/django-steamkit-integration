@@ -157,14 +157,12 @@ class ModelProcessor():
         categories = req['apps'][0]['appinfo']['common'].get(
             'category', None)
         tagRequest = None
-        catList = []
         print('CATEGORY RES: ' + str(categories))
 
         if categories is not None:
             # Loop categories in response
             for category in categories:
                 # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
-                catList.append(category.split('_')[1])
                 c = int(category.split('_')[1])
                 # #
                 # Check if the category exists in our DB, if it doesnt: create it!
@@ -178,7 +176,7 @@ class ModelProcessor():
                     if tagRequest is None:
                         # If we haven't yet done a tag request (i.e our API handler tagRequest())
                         tagRequest = api.tag_request(
-                            str(game.appid), 'categories', catList)
+                            str(game.appid), 'categories')
                         print('Tag Request Response: ' + str(tagRequest))
 
                     # Now, we know that the tagrequest is already there and we can process the tag descriptions.
@@ -206,7 +204,6 @@ class ModelProcessor():
         genres = req['apps'][0]['appinfo']['common'].get(
             'genres', None)
         tagRequest = None
-        genList = []
         print('genres froms steamkit: ' + str(genres))
 
         if genres is not None:
@@ -224,7 +221,7 @@ class ModelProcessor():
                     # Check if have the API tag request (we need it if we don't have the genre in our db)
                     if tagRequest is None:
                         tagRequest = api.tag_request(
-                            str(game.appid), 'genres', genList)
+                            str(game.appid), 'genres')
                         print('Tag request res: ' + str(tagRequest))
 
                     # Now, we know that the tagrequest is already there and we can process the tag descriptions.
@@ -251,7 +248,6 @@ class ModelProcessor():
         pg = req['apps'][0]['appinfo']['common'].get(
             'primary_genre', None)
         tagRequest = None
-        genreList = []
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
@@ -263,7 +259,7 @@ class ModelProcessor():
                 print('PG does not exist in DB: ' + str(pg))
                 if tagRequest is None:
                     tagRequest = api.tag_request(
-                        str(game.appid), 'genres', genreList)
+                        str(game.appid), 'genres')
                     print('Genre tag response via API: ' + str(tagRequest))
 
                 filteredItem = [
@@ -272,34 +268,6 @@ class ModelProcessor():
                     genre_id=pg, genre_description=filteredItem[0]['description'])
 
             game.primary_genre = g
-
-        # if pg is not None:
-        #     tagList = []
-        #     tagList.append(pg)
-        #     # Send the list of tag ids we need to our function that fetches the tag description via steamAPI
-        #     tagRes = api.tag_request(str(game.appid), 'genres', tagList)
-
-        #     if tagRes is not None:
-        #         # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-        #         for item in tagRes:
-        #             for k, v in item.items():
-        #                 # When the key is ID, check if that genre exists in our genre model
-        #                 if (k == 'id'):
-        #                     if Genre.objects.filter(genre_id=v).exists():
-        #                         genre = Genre.objects.get(genre_id=v)
-        #                         # If exists, set the primary genre to that genre
-        #                         game.primary_genre = genre
-        #                     else:
-        #                         # If the genre doesn't exist in our genre model, create it
-        #                         genre = Genre.objects.create(genre_id=v)
-        #                 elif (k == 'description'):
-        #                     # If the desciption for the genre is not yet set, set it and associate game with the primary genre
-        #                     if not genre.genre_description:
-        #                         genre.genre_description = v
-        #                         genre.save()
-        #                         game.primary_genre = genre
-
-        #                 game.save()
 
     # Adds languages to new game object
 
@@ -552,14 +520,12 @@ class ModelProcessor():
     def categoryUpdate(self, game, gameInfo, api):
         categories = gameInfo.get('category', None)
         tagRequest = None
-        catList = []
         catNames = []
 
         if categories is not None:
             # Loop categories in response
             for category in categories:
                 # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
-                catList.append(category.split('_')[1])
                 c = int(category.split('_')[1])
                 # #
                 # Check if the category exists in our DB, if it doesnt: create it!
@@ -573,7 +539,7 @@ class ModelProcessor():
                     if tagRequest is None:
                         # If we haven't yet done a tag request (i.e our API handler tagRequest())
                         tagRequest = api.tag_request(
-                            str(game.appid), 'categories', catList)
+                            str(game.appid), 'categories')
                         print('Tag Request Response: ' + str(tagRequest))
 
                     # Now, we know that the tagrequest is already there and we can process the tag descriptions.
@@ -660,7 +626,7 @@ class ModelProcessor():
                     if tagRequest is None:
                         # Get the tags from API request
                         tagRequest = api.tag_request(
-                            str(game.appid), 'genres', genreList)
+                            str(game.appid), 'genres')
                         print('Genre tag response via API: ' + str(tagRequest))
 
                     # Now we know we have the tagrequest, and can proceed to get the description and add it to our database
@@ -721,7 +687,6 @@ class ModelProcessor():
     def primaryGenreUpdate(self, game, gameInfo, api):
         pg = gameInfo.get('primary_genre', None)
         tagRequest = None
-        genreList = []
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
@@ -734,7 +699,7 @@ class ModelProcessor():
                 print('PG does not exist in DB: ' + str(pg))
                 if tagRequest is None:
                     tagRequest = api.tag_request(
-                        str(game.appid), 'genres', genreList)
+                        str(game.appid), 'genres')
                     print('Genre tag response via API: ' + str(tagRequest))
 
                 filteredItem = [
