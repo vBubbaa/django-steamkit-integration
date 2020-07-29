@@ -246,35 +246,6 @@ class ModelProcessor():
                     game.genres.add(t)
                     game.save()
 
-        # if genres is not None:
-        #     genreList = []
-        #     for tag in genres.items():
-        #         genreList.append(tag[1])
-        #     genreRes = api.tag_request(str(game.appid), 'genres', genreList)
-
-        #     if genreRes is not None:
-        #         # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-        #         for item in genreRes:
-        #             for k, v in item.items():
-        #                 # When the key is ID, check if that genre exists in our genre model
-        #                 if (k == 'id'):
-        #                     if Genre.objects.filter(genre_id=v).exists():
-        #                         genre = Genre.objects.get(genre_id=v)
-        #                         # If exists, associate the game to that genre
-        #                         game.genres.add(genre)
-        #                     else:
-        #                         # If the genre doesn't exist in our genre model, create it
-        #                         genre = Genre.objects.create(genre_id=v)
-        #                 elif (k == 'description'):
-        #                     # If the desciption for the genre is not yet set, set it and associate game with the genre
-        #                     if not genre.genre_description:
-        #                         print('genre v ' + v)
-        #                         genre.genre_description = v
-        #                         genre.save()
-        #                         game.genres.add(genre)
-
-        #                 game.save()
-
     # Genrate primary genre
     def processPrimaryGenre(self, req, game, api):
         pg = req['apps'][0]['appinfo']['common'].get(
