@@ -205,37 +205,75 @@ class ModelProcessor():
         # Grab list of genres from steamkit response
         genres = req['apps'][0]['appinfo']['common'].get(
             'genres', None)
-
+        tagRequest = None
+        genList = []
         print('genres froms steamkit: ' + str(genres))
 
         if genres is not None:
-            genreList = []
             for tag in genres.items():
-                genreList.append(tag[1])
-            genreRes = api.tag_request(str(game.appid), 'genres', genreList)
+                t = int(tag[1])
 
-            if genreRes is not None:
-                # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
-                for item in genreRes:
-                    for k, v in item.items():
-                        # When the key is ID, check if that genre exists in our genre model
-                        if (k == 'id'):
-                            if Genre.objects.filter(genre_id=v).exists():
-                                genre = Genre.objects.get(genre_id=v)
-                                # If exists, associate the game to that genre
-                                game.genres.add(genre)
-                            else:
-                                # If the genre doesn't exist in our genre model, create it
-                                genre = Genre.objects.create(genre_id=v)
-                        elif (k == 'description'):
-                            # If the desciption for the genre is not yet set, set it and associate game with the genre
-                            if not genre.genre_description:
-                                print('genre v ' + v)
-                                genre.genre_description = v
-                                genre.save()
-                                game.genres.add(genre)
+                # #
+                # Check if genre exists in our DB
+                if Genre.objects.filter(genre_id=t):
+                    t = Genre.objects.get(genre_id=t)
+                    print(t.genre_description + ' exists in our database')
+                # Else the genre doesn't exist, so create it
+                else:
+                    print(str(t) + ' does not exit in our database')
+                    # Check if have the API tag request (we need it if we don't have the genre in our db)
+                    if tagRequest is None:
+                        tagRequest = api.tag_request(
+                            str(game.appid), 'genres', genList)
+                        print('Tag request res: ' + str(tagRequest))
 
-                        game.save()
+                    # Now, we know that the tagrequest is already there and we can process the tag descriptions.
+                    #
+                    # Filter the tagRequest list for category matching the ID from steamkit response
+                    filteredItem = [
+                        g for g in tagRequest if g['id'] == str(t)]
+                    print('filtered Item: ' + str(filteredItem))
+                    # Create the category object
+                    t = Genre.objects.create(
+                        genre_id=t, genre_description=filteredItem[0]['description'])
+                    print('Genre created: ' + t.genre_description)
+                # #
+                # Now, lets check and see if the category is associated with our game
+                # If the category isn't associated with the game, associate it.
+                if not game.genres.filter(genre_id=t.genre_id).exists():
+                    print(t.genre_description +
+                          ' is not associated with the game')
+                    game.genres.add(t)
+                    game.save()
+
+        # if genres is not None:
+        #     genreList = []
+        #     for tag in genres.items():
+        #         genreList.append(tag[1])
+        #     genreRes = api.tag_request(str(game.appid), 'genres', genreList)
+
+        #     if genreRes is not None:
+        #         # For each item in the response, get the k, v of each item (k= 'id', 'descriptions' | v= 'idOfTag', 'textDesciptionOfTag')
+        #         for item in genreRes:
+        #             for k, v in item.items():
+        #                 # When the key is ID, check if that genre exists in our genre model
+        #                 if (k == 'id'):
+        #                     if Genre.objects.filter(genre_id=v).exists():
+        #                         genre = Genre.objects.get(genre_id=v)
+        #                         # If exists, associate the game to that genre
+        #                         game.genres.add(genre)
+        #                     else:
+        #                         # If the genre doesn't exist in our genre model, create it
+        #                         genre = Genre.objects.create(genre_id=v)
+        #                 elif (k == 'description'):
+        #                     # If the desciption for the genre is not yet set, set it and associate game with the genre
+        #                     if not genre.genre_description:
+        #                         print('genre v ' + v)
+        #                         genre.genre_description = v
+        #                         genre.save()
+        #                         game.genres.add(genre)
+
+        #                 game.save()
 
     # Genrate primary genre
     def processPrimaryGenre(self, req, game, api):
