@@ -200,6 +200,7 @@ class GetComparedGames(APIView):
     def __init__(self):
         self.sids = []
         self.privateFriends = []
+        self.nonPrivateFriends = []
         self.gameList = []
         self.commonGames = []
         self.res = {}
@@ -223,6 +224,7 @@ class GetComparedGames(APIView):
                 # Loop through each game and append it to the game list
                 for game in userLib['response']['games']:
                     self.gameList.append(game['appid'])
+                self.nonPrivateFriends.append(sid)
             except KeyError:
                 self.privateFriends.append(sid)
 
@@ -231,7 +233,7 @@ class GetComparedGames(APIView):
         # https://stackoverflow.com/a/15812667
         # stores all common appids in var 'out'
         counter = Counter(self.gameList)
-        out = [value for value, count in counter.items() if count == len(self.sids)]
+        out = [value for value, count in counter.items() if count == len(self.nonPrivateFriends)]
 
         # Get each game from commongames from db or create it
         def threadGames(game):
