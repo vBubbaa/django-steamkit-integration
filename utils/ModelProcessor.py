@@ -146,11 +146,12 @@ class ModelProcessor():
 
     # Add price to the app
     def addPrice(self, game, price):
-        newPriceObj = Price(price=price)
-        newPriceObj.save()
-        game.prices.add(newPriceObj)
-        game.current_price = newPriceObj
-        game.save()
+        if price is not None:
+            newPriceObj = Price(price=price)
+            newPriceObj.save()
+            game.prices.add(newPriceObj)
+            game.current_price = newPriceObj
+            game.save()
 
     # Generate all categories realted to the app
     def processCategories(self, req, game, api):
@@ -490,32 +491,33 @@ class ModelProcessor():
                 pass
 
     def priceChangeCheck(self, game, apiPrice):
-        # Check if current price matches the current price in the DB
-        if float(game.current_price.price) != float(apiPrice):
-            print('Price Mismatch')
-            # Create a new price object
-            price = Price(
-                price=apiPrice
-            )
-            price.save()
-            # Add that price to the game we got the price for
-            game.prices.add(price)
-            # Set the current price of that app to the new price we just created
-            game.current_price = price
-            game.save()
+        if apiPrice is not None:
+            # Check if current price matches the current price in the DB
+            if float(game.current_price.price) != float(apiPrice):
+                print('Price Mismatch')
+                # Create a new price object
+                price = Price(
+                    price=apiPrice
+                )
+                price.save()
+                # Add that price to the game we got the price for
+                game.prices.add(price)
+                # Set the current price of that app to the new price we just created
+                game.current_price = price
+                game.save()
 
-            payload = 'Updated app price to: ' + str(game.current_price.price)
-            gameChange = GameChange(
-                change_number=self.changenum,
-                game=game,
-                changelog=GameChange.changelog_builder(
-                    GameChange.UPDATE,
-                    game.appid,
-                    payload=payload
-                ),
-                action=GameChange.UPDATE
-            )
-            gameChange.save()
+                payload = 'Updated app price to: ' + str(game.current_price.price)
+                gameChange = GameChange(
+                    change_number=self.changenum,
+                    game=game,
+                    changelog=GameChange.changelog_builder(
+                        GameChange.UPDATE,
+                        game.appid,
+                        payload=payload
+                    ),
+                    action=GameChange.UPDATE
+                )
+                gameChange.save()
 
     def categoryUpdate(self, game, gameInfo, api):
         categories = gameInfo.get('category', None)
