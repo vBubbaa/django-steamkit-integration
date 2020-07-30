@@ -263,7 +263,7 @@ class ModelProcessor():
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
-        if pg is not None:
+        if pg is not None and pg is not '0':
             if Genre.objects.filter(genre_id=pg).exists():
                 g = Genre.objects.get(genre_id=pg)
                 print('PG exists in our DB: ' + g.genre_description)
@@ -727,7 +727,7 @@ class ModelProcessor():
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
-        if pg is not None:
+        if pg is not None and pg is not '0':
             if Genre.objects.filter(genre_id=pg).exists():
                 g = Genre.objects.get(genre_id=pg)
                 print('PG exists in our DB: ' + g.genre_description)
