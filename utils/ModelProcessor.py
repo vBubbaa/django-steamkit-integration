@@ -165,6 +165,7 @@ class ModelProcessor():
             for category in categories:
                 # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
                 c = int(category.split('_')[1])
+                nonExistent = False
                 # #
                 # Check if the category exists in our DB, if it doesnt: create it!
                 if Category.objects.filter(category_id=c).exists():
@@ -186,18 +187,23 @@ class ModelProcessor():
                     filteredItem = [
                         cat for cat in tagRequest if cat['id'] == c]
                     print('filtered Item: ' + str(filteredItem))
-                    # Create the category object
-                    c = Category.objects.create(
-                        category_id=c, category_description=filteredItem[0]['description'])
-                    print('Category created: ' + c.category_description)
+                    if filteredItem:
+                        # Create the category object
+                        c = Category.objects.create(
+                            category_id=c, category_description=filteredItem[0]['description'])
+                        print('Category created: ' + c.category_description)
+                    else:
+                        print(str(c) + ' does not exist in the steam response')
+                        nonExistent = True
                 # #
                 # Now, lets check and see if the category is associated with our game
                 # If the category isn't associated with the game, associate it.
-                if not game.categories.filter(category_id=c.category_id).exists():
-                    print(c.category_description +
-                          ' is not associated with the game')
-                    game.categories.add(c)
-                    game.save()
+                if not nonExistent:
+                    if not game.categories.filter(category_id=c.category_id).exists():
+                        print(c.category_description +
+                              ' is not associated with the game')
+                        game.categories.add(c)
+                        game.save()
 
     # Generate all genres realted to the app
     def processGenres(self, req, game, api):
@@ -210,7 +216,7 @@ class ModelProcessor():
         if genres is not None:
             for tag in genres.items():
                 t = int(tag[1])
-
+                nonExistent = False
                 # #
                 # Check if genre exists in our DB
                 if Genre.objects.filter(genre_id=t):
@@ -231,18 +237,23 @@ class ModelProcessor():
                     filteredItem = [
                         g for g in tagRequest if g['id'] == str(t)]
                     print('filtered Item: ' + str(filteredItem))
-                    # Create the category object
-                    t = Genre.objects.create(
-                        genre_id=t, genre_description=filteredItem[0]['description'])
-                    print('Genre created: ' + t.genre_description)
+                    if filteredItem:
+                        # Create the category object
+                        t = Genre.objects.create(
+                            genre_id=t, genre_description=filteredItem[0]['description'])
+                        print('Genre created: ' + t.genre_description)
+                    else:
+                        print(str(t) + ' does not exist in the steam response')
+                        nonExistent = True
                 # #
                 # Now, lets check and see if the category is associated with our game
                 # If the category isn't associated with the game, associate it.
-                if not game.genres.filter(genre_id=t.genre_id).exists():
-                    print(t.genre_description +
-                          ' is not associated with the game')
-                    game.genres.add(t)
-                    game.save()
+                if not nonExistent:
+                    if not game.genres.filter(genre_id=t.genre_id).exists():
+                        print(t.genre_description +
+                              ' is not associated with the game')
+                        game.genres.add(t)
+                        game.save()
 
     # Genrate primary genre
     def processPrimaryGenre(self, req, game, api):
@@ -636,7 +647,7 @@ class ModelProcessor():
             for tag in tags.items():
                 # Grab the genere ID
                 t = int(tag[1])
-
+                nonExistent = False
                 # #
                 # Check if the Genre exists in our database already
                 if Genre.objects.filter(genre_id=t).exists():
@@ -657,37 +668,40 @@ class ModelProcessor():
                     # Filter the tagRequest list for genre matching the ID from steamkit response
                     filteredItem = [
                         gr for gr in tagRequest if gr['id'] == str(t)]
-                    print(str(filteredItem))
-                    t = Genre.objects.create(
-                        genre_id=t, genre_description=filteredItem[0]['description'])
-                    print('Genre created: ' + t.genre_description)
+                    if filteredItem:
+                        t = Genre.objects.create(
+                            genre_id=t, genre_description=filteredItem[0]['description'])
+                        print('Genre created: ' + t.genre_description)
+                    else:
+                        print(str(t) + 'does not exist in the steam response')
 
                 # #
                 # Now, we check and see if the Genre is associated with our game
-                if not game.genres.filter(genre_id=t.genre_id).exists():
-                    print('not associate HIT')
-                    print(t.genre_description +
-                          'is not associated with the game')
-                    game.genres.add(t)
-                    game.save()
+                if not nonExistent:
+                    if not game.genres.filter(genre_id=t.genre_id).exists():
+                        print('not associate HIT')
+                        print(t.genre_description +
+                              'is not associated with the game')
+                        game.genres.add(t)
+                        game.save()
 
-                    # Create a changelog for adding a Genre to the game.
-                    payload = 'Added ' + t.genre_description + \
-                        ' to ' + game.name + '\'s genres'
-                    gameChange = GameChange(
-                        change_number=self.changenum,
-                        game=game,
-                        changelog=GameChange.changelog_builder(
-                            GameChange.UPDATE,
-                            game.appid,
-                            payload=payload
-                        ),
-                        action=GameChange.UPDATE
-                    )
-                    gameChange.save()
+                        # Create a changelog for adding a Genre to the game.
+                        payload = 'Added ' + t.genre_description + \
+                            ' to ' + game.name + '\'s genres'
+                        gameChange = GameChange(
+                            change_number=self.changenum,
+                            game=game,
+                            changelog=GameChange.changelog_builder(
+                                GameChange.UPDATE,
+                                game.appid,
+                                payload=payload
+                            ),
+                            action=GameChange.UPDATE
+                        )
+                        gameChange.save()
 
-                # Append the genre ID to genreList for future checking if any have been deleted
-                genreList.append(t.genre_description)
+                    # Append the genre ID to genreList for future checking if any have been deleted
+                    genreList.append(t.genre_description)
 
             for genre in game.genres.all():
                 if genre.genre_description not in genreList:
