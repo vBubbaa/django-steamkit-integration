@@ -502,11 +502,37 @@ class ModelProcessor():
                 pass
 
     def priceChangeCheck(self, game, apiPrice):
-        if apiPrice and game.current_price.price is not None:
-            # Check if current price matches the current price in the DB
-            if float(game.current_price.price) != float(apiPrice):
-                print('Price Mismatch')
-                # Create a new price object
+        try:
+            if apiPrice and game.current_price.price is not None:
+                # Check if current price matches the current price in the DB
+                if float(game.current_price.price) != float(apiPrice):
+                    print('Price Mismatch')
+                    # Create a new price object
+                    price = Price(
+                        price=apiPrice
+                    )
+                    price.save()
+                    # Add that price to the game we got the price for
+                    game.prices.add(price)
+                    # Set the current price of that app to the new price we just created
+                    game.current_price = price
+                    game.save()
+
+                    payload = 'Updated app price to: ' + \
+                        str(game.current_price.price)
+                    gameChange = GameChange(
+                        change_number=self.changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
+        except:
+            if apiPrice is not none:
                 price = Price(
                     price=apiPrice
                 )
@@ -516,32 +542,7 @@ class ModelProcessor():
                 # Set the current price of that app to the new price we just created
                 game.current_price = price
                 game.save()
-
-                payload = 'Updated app price to: ' + \
-                    str(game.current_price.price)
-                gameChange = GameChange(
-                    change_number=self.changenum,
-                    game=game,
-                    changelog=GameChange.changelog_builder(
-                        GameChange.UPDATE,
-                        game.appid,
-                        payload=payload
-                    ),
-                    action=GameChange.UPDATE
-                )
-                gameChange.save()
-
-        # Check if one of the two values is none and the other isn't. If one is none, change the price
-        if apiPrice is None and game.current_price.price is not None or game.current_price.price is None and apiPrice is not None:
-            price = Price(
-                price=apiPrice
-            )
-            price.save()
-            # Add that price to the game we got the price for
-            game.prices.add(price)
-            # Set the current price of that app to the new price we just created
-            game.current_price = price
-            game.save()
+            
 
     def categoryUpdate(self, game, gameInfo, api):
         categories = gameInfo.get('category', None)
