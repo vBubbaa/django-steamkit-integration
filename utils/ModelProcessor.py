@@ -590,6 +590,8 @@ class ModelProcessor():
                         else:
                             print(str(c) + ' does not exist in the steam response')
                             nonExistent = True
+                    else:
+                        nonExistent = True
 
                 # #
                 # Now, lets check and see if the category is associated with our game
