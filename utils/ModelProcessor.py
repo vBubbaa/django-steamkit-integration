@@ -873,7 +873,7 @@ class ModelProcessor():
 
     def appTypeUpdate(self, game, gameInfo):
         appType = gameInfo.get('type')
-        if appType is not None:
+        if appType is not None and game.app_type is not None:
             typeGetOrCreate = AppType.objects.get_or_create(app_type=appType)[
                 0]
             if game.app_type.app_type != appType:
@@ -893,6 +893,25 @@ class ModelProcessor():
                     action=GameChange.UPDATE
                 )
                 gameChange.save()
+
+        elif appType is None and game.app_type is not None or game.app_type is None and appType is not None:
+            typeGetOrCreate = AppType.objects.get_or_create(app_type=appType)[
+                0]
+            game.app_type = typeGetOrCreate
+            game.save()
+
+            payload = 'Added app type: ' + str(game.app_type.app_type)
+            gameChange = GameChange(
+                change_number=self.changenum,
+                game=game,
+                changelog=GameChange.changelog_builder(
+                    GameChange.UPDATE,
+                    game.appid,
+                    payload=payload
+                ),
+                action=GameChange.UPDATE
+            )
+            gameChange.save()
 
     def osListUpdate(self, game, gameInfo):
         oslist = gameInfo.get('oslist', None)
