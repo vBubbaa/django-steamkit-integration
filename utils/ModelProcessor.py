@@ -532,7 +532,7 @@ class ModelProcessor():
                     )
                     gameChange.save()
         except:
-            if apiPrice is not none:
+            if apiPrice is not None:
                 price = Price(
                     price=apiPrice
                 )
