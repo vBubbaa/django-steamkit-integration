@@ -542,11 +542,11 @@ class ModelProcessor():
                 # Set the current price of that app to the new price we just created
                 game.current_price = price
                 game.save()
-            
 
     def categoryUpdate(self, game, gameInfo, api):
         categories = gameInfo.get('category', None)
         tagRequest = None
+        failedTagRequest = False
         catNames = []
 
         if categories is not None:
@@ -570,21 +570,26 @@ class ModelProcessor():
                         tagRequest = api.tag_request(
                             str(game.appid), 'categories')
                         print('Tag Request Response: ' + str(tagRequest))
+                        if tagRequest is None:
+                            print('Category tag request returned None..')
+                            failedTagRequest = True
 
                     # Now, we know that the tagrequest is already there and we can process the tag descriptions.
                     #
                     # Filter the tagRequest list for category matching the ID from steamkit response
-                    filteredItem = [
-                        cat for cat in tagRequest if cat['id'] == c]
-                    # Apparently somtimes steamkit returns non existent tags, so see if the tag exists first in the steam res
-                    if filteredItem:
-                        # Create the category object
-                        c = Category.objects.create(
-                            category_id=c, category_description=filteredItem[0]['description'])
-                        print('Category created: ' + c.category_description)
-                    else:
-                        print(str(c) + ' does not exist in the steam response')
-                        nonExistent = True
+                    if not failedTagRequest:
+                        filteredItem = [
+                            cat for cat in tagRequest if cat['id'] == c]
+                        # Apparently somtimes steamkit returns non existent tags, so see if the tag exists first in the steam res
+                        if filteredItem:
+                            # Create the category object
+                            c = Category.objects.create(
+                                category_id=c, category_description=filteredItem[0]['description'])
+                            print('Category created: ' +
+                                  c.category_description)
+                        else:
+                            print(str(c) + ' does not exist in the steam response')
+                            nonExistent = True
 
                 # #
                 # Now, lets check and see if the category is associated with our game
