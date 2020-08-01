@@ -29,18 +29,18 @@ class ModelProcessor():
         # Set changenumber
         self.changenum = changenum
 
-        # Some games get added with no info, so just add it to the db with the appid
-        if 'common' not in req['apps'][0]['appinfo']:
-            print('no common section' + str(req))
-            game = Game(
-                appid=appid
-            )
-
-        elif ('apps' not in req):
+        if 'apps' not in req:
             print('ERROR: ' + str(appid) + ' has no req["apps"] section.')
 
         elif ('appinfo' not in req['apps'][0]):
             print('ERROR: ' + str(appid) + ' has no req["apps"][0] section.')
+
+        # Some games get added with no info, so just add it to the db with the appid
+        elif 'common' not in req['apps'][0]['appinfo']:
+            print('no common section' + str(req))
+            game = Game(
+                appid=appid
+            )
 
         # Else, the game has information in common section
         else:
@@ -171,7 +171,8 @@ class ModelProcessor():
                     # Check if the category exists in our DB, if it doesnt: create it!
                     if Category.objects.filter(category_id=c).exists():
                         c = Category.objects.get(category_id=c)
-                        print(c.category_description + ' exists in our database')
+                        print(c.category_description +
+                              ' exists in our database')
                     # The category doesn't exist in our database yet, lets create it!
                     else:
                         print(str(c) + ' does not exist in our database')
@@ -192,7 +193,8 @@ class ModelProcessor():
                             # Create the category object
                             c = Category.objects.create(
                                 category_id=c, category_description=filteredItem[0]['description'])
-                            print('Category created: ' + c.category_description)
+                            print('Category created: ' +
+                                  c.category_description)
                         else:
                             print(str(c) + ' does not exist in the steam response')
                             nonExistent = True
@@ -202,7 +204,7 @@ class ModelProcessor():
                     if not nonExistent:
                         if not game.categories.filter(category_id=c.category_id).exists():
                             print(c.category_description +
-                                ' is not associated with the game')
+                                  ' is not associated with the game')
                             game.categories.add(c)
                             game.save()
 
