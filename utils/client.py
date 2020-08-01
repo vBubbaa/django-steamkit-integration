@@ -48,27 +48,24 @@ class SteamWorker(object):
             self.steam.disconnect()
 
     def get_product_info(self, appids=[]):
-        try:
-            resp = self.steam.send_job_and_wait(MsgProto(EMsg.ClientPICSProductInfoRequest),
-                                                {
-                'apps': map(lambda x: {'appid': x}, appids),
-            },
-                timeout=10
-            )
+        resp = self.steam.send_job_and_wait(MsgProto(EMsg.ClientPICSProductInfoRequest),
+                                            {
+            'apps': map(lambda x: {'appid': x}, appids),
+        },
+            timeout=10
+        )
 
-            if not resp:
-                return {}
+        if not resp:
+            return {}
 
-            resp = proto_to_dict(resp)
+        resp = proto_to_dict(resp)
 
-            for app in resp.get('apps', []):
-                app['appinfo'] = vdf.loads(
-                    app.pop('buffer')[:-1].decode('utf-8', 'replace'))['appinfo']
-                app['sha'] = hexlify(app['sha']).decode('utf-8')
+        for app in resp.get('apps', []):
+            app['appinfo'] = vdf.loads(
+                app.pop('buffer')[:-1].decode('utf-8', 'replace'))['appinfo']
+            app['sha'] = hexlify(app['sha']).decode('utf-8')
 
-            return resp
-        except Exception as e:
-            print('Error in get_production_info ' + str(e) )
+        return resp
 
     def get_changes(self, change_num):
         return self.steam.get_changes_since(change_number=change_num, app_changes=True, package_changes=False)
