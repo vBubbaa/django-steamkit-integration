@@ -163,47 +163,51 @@ class ModelProcessor():
         if categories is not None:
             # Loop categories in response
             for category in categories:
-                # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
-                c = int(category.split('_')[1])
-                nonExistent = False
-                # #
-                # Check if the category exists in our DB, if it doesnt: create it!
-                if Category.objects.filter(category_id=c).exists():
-                    c = Category.objects.get(category_id=c)
-                    print(c.category_description + ' exists in our database')
-                # The category doesn't exist in our database yet, lets create it!
-                else:
-                    print(str(c) + ' does not exist in our database')
-                    # Check if we already got the categories via the api.
-                    if tagRequest is None:
-                        # If we haven't yet done a tag request (i.e our API handler tagRequest())
-                        tagRequest = api.tag_request(
-                            str(game.appid), 'categories')
-                        print('Tag Request Response: ' + str(tagRequest))
-
-                    # Now, we know that the tagrequest is already there and we can process the tag descriptions.
-                    #
-                    # Filter the tagRequest list for category matching the ID from steamkit response
-                    filteredItem = [
-                        cat for cat in tagRequest if cat['id'] == c]
-                    print('filtered Item: ' + str(filteredItem))
-                    if filteredItem:
-                        # Create the category object
-                        c = Category.objects.create(
-                            category_id=c, category_description=filteredItem[0]['description'])
-                        print('Category created: ' + c.category_description)
+                try:
+                    # Grab the ID of the category from steamkit (steamkit doesn't have the category description [string])
+                    c = int(category.split('_')[1])
+                    nonExistent = False
+                    # #
+                    # Check if the category exists in our DB, if it doesnt: create it!
+                    if Category.objects.filter(category_id=c).exists():
+                        c = Category.objects.get(category_id=c)
+                        print(c.category_description + ' exists in our database')
+                    # The category doesn't exist in our database yet, lets create it!
                     else:
-                        print(str(c) + ' does not exist in the steam response')
-                        nonExistent = True
-                # #
-                # Now, lets check and see if the category is associated with our game
-                # If the category isn't associated with the game, associate it.
-                if not nonExistent:
-                    if not game.categories.filter(category_id=c.category_id).exists():
-                        print(c.category_description +
-                              ' is not associated with the game')
-                        game.categories.add(c)
-                        game.save()
+                        print(str(c) + ' does not exist in our database')
+                        # Check if we already got the categories via the api.
+                        if tagRequest is None:
+                            # If we haven't yet done a tag request (i.e our API handler tagRequest())
+                            tagRequest = api.tag_request(
+                                str(game.appid), 'categories')
+                            print('Tag Request Response: ' + str(tagRequest))
+
+                        # Now, we know that the tagrequest is already there and we can process the tag descriptions.
+                        #
+                        # Filter the tagRequest list for category matching the ID from steamkit response
+                        filteredItem = [
+                            cat for cat in tagRequest if cat['id'] == c]
+                        print('filtered Item: ' + str(filteredItem))
+                        if filteredItem:
+                            # Create the category object
+                            c = Category.objects.create(
+                                category_id=c, category_description=filteredItem[0]['description'])
+                            print('Category created: ' + c.category_description)
+                        else:
+                            print(str(c) + ' does not exist in the steam response')
+                            nonExistent = True
+                    # #
+                    # Now, lets check and see if the category is associated with our game
+                    # If the category isn't associated with the game, associate it.
+                    if not nonExistent:
+                        if not game.categories.filter(category_id=c.category_id).exists():
+                            print(c.category_description +
+                                ' is not associated with the game')
+                            game.categories.add(c)
+                            game.save()
+
+                except Exception as e:
+                    print('Category Exception with error: ' + str(e))
 
     # Generate all genres realted to the app
     def processGenres(self, req, game, api):
