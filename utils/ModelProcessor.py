@@ -29,7 +29,10 @@ class ModelProcessor():
         # Set changenumber
         self.changenum = changenum
 
-        if 'apps' not in req:
+        if req is None:
+            print('ERROR ' + str(appid) + 'steamkit res is None..')
+
+        elif 'apps' not in req:
             print('ERROR: ' + str(appid) + ' has no req["apps"] section.')
 
         elif ('appinfo' not in req['apps'][0]):
@@ -357,8 +360,11 @@ class ModelProcessor():
         # Grab the game info from the steamkit worker
         gameInfo = worker.get_product_info(appids=[appid])
 
+        if gameInfo is None:
+            print('ERROR ' + str(appid) + ' steamkit res is None.')
+
         # Check if app section exists, if it doesn't dont try and process the app
-        if 'apps' not in gameInfo:
+        elif 'apps' not in gameInfo:
             print('ERROR | ' + str(appid) +
                   ' has no gameInfo["apps"] section. Response --> ' + str(gameInfo))
 
