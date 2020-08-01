@@ -47,7 +47,7 @@ class SteamWorker(object):
         if self.steam.connected:
             self.steam.disconnect()
 
-    def get_product_info(self, appids=[]):'
+    def get_product_info(self, appids=[]):
         try:
             resp = self.steam.send_job_and_wait(MsgProto(EMsg.ClientPICSProductInfoRequest),
                                                 {
