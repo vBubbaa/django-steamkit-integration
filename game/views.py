@@ -74,7 +74,7 @@ class GameDetail(generics.RetrieveAPIView):
 # Returns the 10 most recent changelogs
 # @URL: logs/
 class LogList(generics.ListAPIView):
-    queryset = GameChange.objects.all().order_by('-id')[:10]
+    queryset = GameChange.objects.all().order_by('-created_time')[:10]
     serializer_class = LogSerializer
 
 
@@ -84,7 +84,7 @@ class AllLogs(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['changelog', 'action', 'id', 'game__name', 'game__appid']
     pagination_class = StandardResultsSetPagination
-    queryset = GameChange.objects.all()
+    queryset = GameChange.objects.all().order_by('-created_time')
     serializer_class = LogSerializer
 
 # Returns all Developers
@@ -193,7 +193,7 @@ class GameLogs(generics.ListAPIView):
     def get_queryset(self):
         appid = self.kwargs['appid']
         game = Game.objects.filter(appid=appid)
-        return GameChange.objects.filter(game__appid=appid)
+        return GameChange.objects.filter(game__appid=appid).order_by('-created_time')
 
 # Returns steamspy information given an appid as a param
 # @url: steamspy/<int:appid>
