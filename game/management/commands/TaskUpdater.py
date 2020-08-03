@@ -47,6 +47,8 @@ class Command(BaseCommand):
                         task.processing = True
                         processor.processNewGame(task.appid, task.changenumber, worker, api)
                         task.delete()
+
+                    time.sleep(3)
             else:
                 print('Task model has NO tasks')
 
