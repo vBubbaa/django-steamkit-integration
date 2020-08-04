@@ -269,6 +269,7 @@ class ModelProcessor():
         pg = req['apps'][0]['appinfo']['common'].get(
             'primary_genre', None)
         tagRequest = None
+        genreExists = True
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
@@ -285,11 +286,16 @@ class ModelProcessor():
 
                 filteredItem = [
                     prim for prim in tagRequest if prim['id'] == str(pg)]
-                g = Genre.objects.create(
-                    genre_id=pg, genre_description=filteredItem[0]['description'])
+                # Sometimes games have unknown tags, in that case check to see if it exists
+                if filteredItem:
+                    g = Genre.objects.create(
+                        genre_id=pg, genre_description=filteredItem[0]['description'])
+                else:
+                    genreExists = False
 
-            game.primary_genre = g
-
+            # If the genre exists (IE not an unknown genre, then add it)
+            if genreExists:
+                game.primary_genre = g
     # Adds languages to new game object
 
     def processLanguages(self, req, game):
@@ -700,6 +706,7 @@ class ModelProcessor():
                         print('Genre created: ' + t.genre_description)
                     else:
                         print(str(t) + 'does not exist in the steam response')
+                        nonExistent = True
 
                 # #
                 # Now, we check and see if the Genre is associated with our game
@@ -750,6 +757,7 @@ class ModelProcessor():
     def primaryGenreUpdate(self, game, gameInfo, api):
         pg = gameInfo.get('primary_genre', None)
         tagRequest = None
+        genreExists = True
         print('Primary genre from steamkit: ' + str(pg))
 
         # Check for steamkit res existance of PG
@@ -767,29 +775,33 @@ class ModelProcessor():
 
                 filteredItem = [
                     prim for prim in tagRequest if prim['id'] == str(pg)]
-                g = Genre.objects.create(
-                    genre_id=pg, genre_description=filteredItem[0]['description'])
+                if filteredItem:
+                    g = Genre.objects.create(
+                        genre_id=pg, genre_description=filteredItem[0]['description'])
+                else:
+                    genreExists = False
 
-            # Compare the game primary genre to the steamkit responeses primary genre and update accordingly
-            if game.primary_genre == g:
-                print('Primary genre is up to date.')
-            else:
-                print('Primary genre is NOT up to date')
-                game.primary_genre = g
+            if genreExists:
+                # Compare the game primary genre to the steamkit responeses primary genre and update accordingly
+                if game.primary_genre == g:
+                    print('Primary genre is up to date.')
+                else:
+                    print('Primary genre is NOT up to date')
+                    game.primary_genre = g
 
-                payload = 'Updated ' + game.name + \
-                    '\'s primary genre to ' + g.genre_description
-                gameChange = GameChange(
-                    change_number=self.changenum,
-                    game=game,
-                    changelog=GameChange.changelog_builder(
-                        GameChange.UPDATE,
-                        game.appid,
-                        payload=payload
-                    ),
-                    action=GameChange.UPDATE
-                )
-                gameChange.save()
+                    payload = 'Updated ' + game.name + \
+                        '\'s primary genre to ' + g.genre_description
+                    gameChange = GameChange(
+                        change_number=self.changenum,
+                        game=game,
+                        changelog=GameChange.changelog_builder(
+                            GameChange.UPDATE,
+                            game.appid,
+                            payload=payload
+                        ),
+                        action=GameChange.UPDATE
+                    )
+                    gameChange.save()
 
     # Assocations (publishers and developers for a given app)
     def associationsUpdate(self, game, gameInfo):
