@@ -63,6 +63,6 @@ class Command(BaseCommand):
                 else:
                     print("No Changes")
             except Exception as e:
-                print("Error at game " + str(appid) + "at changenumber: " + str(currentChangeNumber))
+                print("Error at game " + str(appid) + "at changenumber: " + str(currentChangeNumber) + ' with error: ' + str(e))
 
             time.sleep(10)
