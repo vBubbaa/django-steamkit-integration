@@ -17,8 +17,6 @@ begins the task of either creating the app, or editing the existing app
 Usage:
 - python manage.py TaskUpdater
 """
-
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
         # Steamkit client
