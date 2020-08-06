@@ -9,13 +9,13 @@ from game.models import Game, Task
 
 
 """
+# This is a commit test for new branch
 This Django management command serves as a method of continuously running and monitoring
 client changes which updates the game objects in our database
 
 Usage:
 - python manage.py ClientUpdater
 """
-
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
