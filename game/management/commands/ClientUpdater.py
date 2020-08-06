@@ -40,10 +40,10 @@ class Command(BaseCommand):
 
         # Loop forever to monitor client changes, waits 10 seconds to check for new changes
         while True:
-            # Sets the changes to always be at the current change number in our script
-            changes = worker.get_changes(currentChangeNumber)
-
             try:
+                # Sets the changes to always be at the current change number in our script
+                changes = worker.get_changes(currentChangeNumber)
+
                 # If no new changes
                 if (currentChangeNumber != getCurrentChangeNumber()):
                     for change in changes.app_changes:
@@ -62,7 +62,9 @@ class Command(BaseCommand):
 
                 else:
                     print("No Changes")
+                    
             except Exception as e:
                 print("Error at game " + str(appid) + "at changenumber: " + str(currentChangeNumber) + ' with error: ' + str(e))
+                time.sleep(10)
 
             time.sleep(10)

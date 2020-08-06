@@ -31,26 +31,29 @@ class Command(BaseCommand):
         api = SteamApi()
 
         while True:
-            # See if there are any tasks
-            if Task.objects.all():
-                # Loop through each task and start processing them
-                for task in Task.objects.all():
-                    # If the app already exists, we update it with processExistingGame()
-                    if Game.objects.filter(appid=task.appid).exists():
-                        print('task is an existing app | appid: ' + str(task.appid))
-                        task.processing = True
-                        processor.processExistingGame(task.appid, task.changenumber, worker, api)
-                        task.delete()
-                    # if the app doesn't exist, we create a new app with processNewGame
-                    else:
-                        print('task is New app | appid: ' + str(task.appid))
-                        task.processing = True
-                        processor.processNewGame(task.appid, task.changenumber, worker, api)
-                        task.delete()
+            try:
+                # See if there are any tasks
+                if Task.objects.all():
+                    # Loop through each task and start processing them
+                    for task in Task.objects.all():
+                        # If the app already exists, we update it with processExistingGame()
+                        if Game.objects.filter(appid=task.appid).exists():
+                            print('task is an existing app | appid: ' + str(task.appid))
+                            task.processing = True
+                            processor.processExistingGame(task.appid, task.changenumber, worker, api)
+                            task.delete()
+                        # if the app doesn't exist, we create a new app with processNewGame
+                        else:
+                            print('task is New app | appid: ' + str(task.appid))
+                            task.processing = True
+                            processor.processNewGame(task.appid, task.changenumber, worker, api)
+                            task.delete()
 
-                    time.sleep(5)
-            else:
-                print('Task model has NO tasks')
+                        time.sleep(5)
+                else:
+                    print('Task model has NO tasks')
+            except Exception as e:
+                print('Task updater exception ERR: ' + str(e))
 
             time.sleep(10)
 
