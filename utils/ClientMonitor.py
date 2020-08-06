@@ -4,6 +4,7 @@ gevent.monkey.patch_ssl()
 
 import time
 from utils.client import SteamWorker
+from game.models import Task
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -44,6 +45,12 @@ class ClientMonitor():
                 for change in changes.get('app_changes'):
                     print('# '*15)
                     print('Change: ' + str(change) + ' | App Change Appid: ' + str(change['appid']))
+                    appid = change['appid']
+                    # CHeck if the app alrady has a task
+                    if not Task.objects.filter(appid=appid).exists():
+                        # Create a task with the app
+                        Task.objects.create(appid=appid, changenumber=change['change_number'])
+                        print('Task created for appid: ' + str(appid))
                     print('# '*15)
         else:
             print('No changes have occured')
