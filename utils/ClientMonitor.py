@@ -32,25 +32,28 @@ class ClientMonitor():
         return self.currentChangeNumber
 
     def changeMonitor(self):
-        # Sets the changenumber to the current change number
-        changes = self.worker.get_product_changes(self.currentChangeNumber)
+        try:
+            # Sets the changenumber to the current change number
+            changes = self.worker.get_product_changes(self.currentChangeNumber)
 
-        # Check if changes have occured
-        if (self.currentChangeNumber != self.getCurrentChangeNumber()):
-            print('Changes have occured')
-            print(str(changes))
-            print('~'*30)
-            # Check if apps where in the change (we don't care about packages.. yet..)
-            if changes.get('app_changes'):
-                for change in changes.get('app_changes'):
-                    print('# '*15)
-                    print('Change: ' + str(change) + ' | App Change Appid: ' + str(change['appid']))
-                    appid = change['appid']
-                    # CHeck if the app alrady has a task
-                    if not Task.objects.filter(appid=appid).exists():
-                        # Create a task with the app
-                        Task.objects.create(appid=appid, changenumber=change['change_number'])
-                        print('Task created for appid: ' + str(appid))
-                    print('# '*15)
-        else:
-            print('No changes have occured')
+            # Check if changes have occured
+            if (self.currentChangeNumber != self.getCurrentChangeNumber()):
+                print('Changes have occured')
+                print(str(changes))
+                print('~'*30)
+                # Check if apps where in the change (we don't care about packages.. yet..)
+                if changes.get('app_changes'):
+                    for change in changes.get('app_changes'):
+                        print('# '*15)
+                        print('Change: ' + str(change) + ' | App Change Appid: ' + str(change['appid']))
+                        appid = change['appid']
+                        # CHeck if the app alrady has a task
+                        if not Task.objects.filter(appid=appid).exists():
+                            # Create a task with the app
+                            Task.objects.create(appid=appid, changenumber=change['change_number'])
+                            print('Task created for appid: ' + str(appid))
+                        print('# '*15)
+            else:
+                print('No changes have occured')
+        except Exception as e:
+            print('Exception with changes: ' + str(e) + ' ' + str(self.currentChangeNumber)
