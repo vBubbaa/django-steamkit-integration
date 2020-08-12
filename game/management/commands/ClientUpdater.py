@@ -31,21 +31,24 @@ class Command(BaseCommand):
         currentChangeNum = worker.get_product_changes(0)['current_change_number']
 
         while True:
-            changes = worker.get_product_changes(currentChangeNum)
-            if currentChangeNum != changes['current_change_number']:
-                print('Changes have occured')
-                if changes.get('app_changes'):
-                    for change in changes.get('app_changes'):
-                        print(str(change))
-                        appid = change['appid']
-                        # CHeck if the app alrady has a task
-                        if not Task.objects.filter(appid=appid).exists():
-                            # Create a task with the app
-                            Task.objects.create(appid=appid, changenumber=change['change_number'])
-                            print('Task created for appid: ' + str(appid))
-                    currentChangeNum = changes['current_change_number']
+            if worker.isConnected():
+                changes = worker.get_product_changes(currentChangeNum)
+                if currentChangeNum != changes['current_change_number']:
+                    print('Changes have occured')
+                    if changes.get('app_changes'):
+                        for change in changes.get('app_changes'):
+                            print(str(change))
+                            appid = change['appid']
+                            # CHeck if the app alrady has a task
+                            if not Task.objects.filter(appid=appid).exists():
+                                # Create a task with the app
+                                Task.objects.create(appid=appid, changenumber=change['change_number'])
+                                print('Task created for appid: ' + str(appid))
+                        currentChangeNum = changes['current_change_number']
+                else:
+                    print('No changes occured')
             else:
-                print('No changes occured')
+                print('Disconnected, waiting for reconnect..')
 
             time.sleep(10)
 
