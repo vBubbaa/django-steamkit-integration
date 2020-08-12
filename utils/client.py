@@ -59,6 +59,12 @@ class SteamWorker(object):
     def login(self):
         self.steam.anonymous_login()
 
+    def isConnected(self):
+        if self.steam.connected:
+            return True
+        else:
+            return False
+
     def close(self):
         if self.steam.logged_on:
             self.logged_on_once = False
