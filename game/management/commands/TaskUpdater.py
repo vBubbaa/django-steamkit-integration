@@ -17,8 +17,6 @@ begins the task of either creating the app, or editing the existing app
 Usage:
 - python manage.py TaskUpdater
 """
-
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
         # Steamkit client
@@ -31,7 +29,7 @@ class Command(BaseCommand):
         api = SteamApi()
 
         while True:
-            try:
+            if worker.isConnected():
                 # See if there are any tasks
                 if Task.objects.all():
                     # Loop through each task and start processing them
@@ -52,8 +50,8 @@ class Command(BaseCommand):
                         time.sleep(10)
                 else:
                     print('Task model has NO tasks')
-            except Exception as e:
-                print('Task updater exception ERR: ' + str(e))
+            else:
+                print('Disconnected from steam, waiting for reconnect...')
 
             time.sleep(10)
 

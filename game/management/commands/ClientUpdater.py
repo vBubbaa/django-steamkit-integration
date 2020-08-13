@@ -8,63 +8,49 @@ from utils.client import SteamWorker
 from game.models import Game, Task
 
 
-"""
-This Django management command serves as a method of continuously running and monitoring
-client changes which updates the game objects in our database
-
-Usage:
-- python manage.py ClientUpdater
-"""
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# This Django management command serves as a method of continuously running and monitoring steam
+# client changes. We get the change numbers and the appids affected and create a task to see when changed.
+#
+# Usage:
+# - python manage.py ClientUpdater
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        # Steamkit client
+        print('*'*30)
+        print('Starting SteamWorker')
         worker = SteamWorker()
         worker.login()
+        if worker.isConnected():
+            print('Connected')
+        else: 
+            print('Connection Error')
+        print('*'*30)
 
-        """
-        - This function grabs the current change number that the steam client is on
-        - The script will use this to check for new change numbers
-        """
-        def getCurrentChangeNumber():
-            changes = worker.get_changes(1)
-            currentChangeNum = changes.current_change_number
-            print(str(currentChangeNum))
-            return currentChangeNum
+        print('Get changed')
+        currentChangeNum = worker.get_product_changes(0)['current_change_number']
 
-        # The current change number out script is on
-        # This is the init where we set it to the current number on the steam client
-        # - 1 for testing, so we always have fresh changes to look at
-        currentChangeNumber = getCurrentChangeNumber()
-
-        # Loop forever to monitor client changes, waits 10 seconds to check for new changes
         while True:
-            try:
-                # Sets the changes to always be at the current change number in our script
-                changes = worker.get_changes(currentChangeNumber)
-
-                # If no new changes
-                if (currentChangeNumber != getCurrentChangeNumber()):
-                    for change in changes.app_changes:
-                        print("App Change: " + str(change.appid))
-                        appid = change.appid
-                        # If a task for the app already exists, dont create another task
-                        if not Task.objects.filter(appid=appid).exists():
-                            # Create a task to edit the existing app
-                            Task.objects.create(appid=appid, changenumber=change.change_number)
-
-
-                    # Sets the next change number to the current, so we can check for the next change number
-                    currentChangeNumber = getCurrentChangeNumber()
-                    print('current change num after actions ' +
-                        str(currentChangeNumber))
-
+            if worker.isConnected():
+                changes = worker.get_product_changes(currentChangeNum)
+                if currentChangeNum != changes['current_change_number']:
+                    print('Changes have occured')
+                    if changes.get('app_changes'):
+                        for change in changes.get('app_changes'):
+                            print(str(change))
+                            appid = change['appid']
+                            # CHeck if the app alrady has a task
+                            if not Task.objects.filter(appid=appid).exists():
+                                # Create a task with the app
+                                Task.objects.create(appid=appid, changenumber=change['change_number'])
+                                print('Task created for appid: ' + str(appid))
+                        currentChangeNum = changes['current_change_number']
                 else:
-                    print("No Changes")
-                    
-            except Exception as e:
-                print("Error at game " + str(appid) + "at changenumber: " + str(currentChangeNumber) + ' with error: ' + str(e))
-                time.sleep(10)
+                    print('No changes occured')
+            else:
+                print('Disconnected, waiting for reconnect..')
 
             time.sleep(10)
+
+        
+        
