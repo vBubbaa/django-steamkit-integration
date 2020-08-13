@@ -47,10 +47,11 @@ class Command(BaseCommand):
                         currentChangeNum = changes['current_change_number']
                 else:
                     print('No changes occured')
+                    time.sleep(10)
             else:
                 print('Disconnected, waiting for reconnect..')
-
-            time.sleep(10)
+                time.sleep(10)
+            
 
         
         
