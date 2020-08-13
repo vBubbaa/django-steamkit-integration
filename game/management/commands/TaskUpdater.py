@@ -49,7 +49,7 @@ class Command(BaseCommand):
                             processor.processNewGame(task.appid, task.changenumber, worker, api)
                             task.delete()
 
-                        time.sleep(5)
+                        time.sleep(10)
                 else:
                     print('Task model has NO tasks')
             except Exception as e:
