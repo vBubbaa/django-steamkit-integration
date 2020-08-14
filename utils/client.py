@@ -75,29 +75,33 @@ class SteamWorker(object):
 
     # Gets the product information of the given apps in [] form. Also accepts packages, but we aren't worried about that yet.
     def get_product_info(self, appids=[], packageids=[]):
-        resp = self.steam.send_job_and_wait(MsgProto(EMsg.ClientPICSProductInfoRequest),
-                                            {
-            'apps': map(lambda x: {'appid': x}, appids),
-            'packages': map(lambda x: {'packageid': x}, packageids),
-        },
-            timeout=10
-        )
+        try:
+            resp = self.steam.send_job_and_wait(MsgProto(EMsg.ClientPICSProductInfoRequest),
+                                                {
+                'apps': map(lambda x: {'appid': x}, appids),
+                'packages': map(lambda x: {'packageid': x}, packageids),
+            },
+                timeout=10
+            )
 
-        if not resp:
+            if not resp:
+                return {}
+
+            resp = proto_to_dict(resp)
+
+            for app in resp.get('apps', []):
+                app['appinfo'] = vdf.loads(
+                    app.pop('buffer')[:-1].decode('utf-8', 'replace'))['appinfo']
+                app['sha'] = hexlify(app['sha']).decode('utf-8')
+            for pkg in resp.get('packages', []):
+                pkg['appinfo'] = vdf.binary_loads(pkg.pop('buffer')[4:])[
+                    str(pkg['packageid'])]
+                pkg['sha'] = hexlify(pkg['sha']).decode('utf-8')
+
+            return resp
+        except:
+            print('Error in client get_product_info | appid: ' + appids[0])
             return {}
-
-        resp = proto_to_dict(resp)
-
-        for app in resp.get('apps', []):
-            app['appinfo'] = vdf.loads(
-                app.pop('buffer')[:-1].decode('utf-8', 'replace'))['appinfo']
-            app['sha'] = hexlify(app['sha']).decode('utf-8')
-        for pkg in resp.get('packages', []):
-            pkg['appinfo'] = vdf.binary_loads(pkg.pop('buffer')[4:])[
-                str(pkg['packageid'])]
-            pkg['sha'] = hexlify(pkg['sha']).decode('utf-8')
-
-        return resp
 
     # Returns the changes that have occured on steam since a given change number
     def get_product_changes(self, since_change_number):
