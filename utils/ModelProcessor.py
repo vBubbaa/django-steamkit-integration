@@ -18,100 +18,77 @@ class ModelProcessor():
     # - worker: steamkit worker to handle steamkit calls
     # - api: SteamApi custom object to handle our steam api calls
     ##############################################################
-    def processNewGame(self, appid, changenum, worker, api):
+    def processNewGame(self, appid, changenum, api, payload):
         print('Start processing new game')
 
-        # Get the response from steamkit
-        # The request for all of the app data via steamkit
-        # try:
-        req = worker.get_product_info(appids=[appid])
+        # Passed payload of app data from Scout()
+        req = payload
 
         # Set changenumber
         self.changenum = changenum
 
-        if req is None:
-            print('ERROR ' + str(appid) + 'steamkit res is None..')
+        # New Game Declaration for non relationship fields and non-multiple fields
+        game = Game(
+            appid=appid,
+            name=req['apps'][0]['appinfo']['common']['name'],
+            slug=slugify(req['apps'][0]['appinfo']['common']
+                            ['name'], allow_unicode=True),
+            release_state=req['apps'][0]['appinfo']['common'].get(
+                'releasestate', None),
+            icon=req['apps'][0]['appinfo']['common'].get('icon', None),
+            logo=req['apps'][0]['appinfo']['common'].get('logo', None),
+            logo_small=req['apps'][0]['appinfo']['common'].get(
+                'logo_small', None),
+            clienticon=req['apps'][0]['appinfo']['common'].get(
+                'clienticon', None),
+            controller_support=req['apps'][0]['appinfo']['common'].get(
+                'controller_support', None),
+            steam_release_date=self.epochToDateTime(
+                req['apps'][0]['appinfo']['common'].get(
+                    'steam_release_date')),
+            metacritic_score=req['apps'][0]['appinfo']['common'].get(
+                'metacritic_score', None),
+            metacritic_fullurl=req['apps'][0]['appinfo']['common'].get(
+                'metacritic_fullurl', None),
+        )
 
-        elif 'apps' not in req:
-            print('ERROR: ' + str(appid) + ' has no req["apps"] section.')
+        game.save()
 
-        elif ('appinfo' not in req['apps'][0]):
-            print('ERROR: ' + str(appid) + ' has no req["apps"][0] section.')
+        # Boolean field creation in DB
+        self.processBoolFields(req, game)
+        # Int field creation in DB
+        self.processIntFields(req, game)
+        # Add price from steamAPI
+        self.addPrice(game, api.priceRequest(game.appid))
+        # Add categories
+        self.processCategories(req, game, api)
+        # Add genres
+        self.processGenres(req, game, api)
+        # Add primary genre
+        self.processPrimaryGenre(req, game, api)
+        # Add languages
+        self.processLanguages(req, game)
+        # Add app type
+        self.processAppType(req, game)
+        # Add OS options
+        self.processOsOptions(req, game)
+        # Add Associations (dev, publisher)
+        self.processAssociations(req, game)
 
-        # Some games get added with no info, so just add it to the db with the appid
-        elif 'common' not in req['apps'][0]['appinfo']:
-            print('no common section' + str(req))
-            game = Game(
-                appid=appid
-            )
+        # Add changelog for app creation
+        gamechange = GameChange(
+            change_number=self.changenum,
+            game=game,
+            changelog=GameChange.changelog_builder(
+                GameChange.ADD,
+                game.appid,
+            ),
+            action=GameChange.ADD
+        )
+        gamechange.save()
 
-        # Else, the game has information in common section
-        else:
-            # New Game Declaration for non relationship fields and non-multiple fields
-            game = Game(
-                appid=appid,
-                name=req['apps'][0]['appinfo']['common']['name'],
-                slug=slugify(req['apps'][0]['appinfo']['common']
-                             ['name'], allow_unicode=True),
-                release_state=req['apps'][0]['appinfo']['common'].get(
-                    'releasestate', None),
-                icon=req['apps'][0]['appinfo']['common'].get('icon', None),
-                logo=req['apps'][0]['appinfo']['common'].get('logo', None),
-                logo_small=req['apps'][0]['appinfo']['common'].get(
-                    'logo_small', None),
-                clienticon=req['apps'][0]['appinfo']['common'].get(
-                    'clienticon', None),
-                controller_support=req['apps'][0]['appinfo']['common'].get(
-                    'controller_support', None),
-                steam_release_date=self.epochToDateTime(
-                    req['apps'][0]['appinfo']['common'].get(
-                        'steam_release_date')),
-                metacritic_score=req['apps'][0]['appinfo']['common'].get(
-                    'metacritic_score', None),
-                metacritic_fullurl=req['apps'][0]['appinfo']['common'].get(
-                    'metacritic_fullurl', None),
-            )
-
-            game.save()
-
-            # Boolean field creation in DB
-            self.processBoolFields(req, game)
-            # Int field creation in DB
-            self.processIntFields(req, game)
-            # Add price from steamAPI
-            self.addPrice(game, api.priceRequest(game.appid))
-            # Add categories
-            self.processCategories(req, game, api)
-            # Add genres
-            self.processGenres(req, game, api)
-            # Add primary genre
-            self.processPrimaryGenre(req, game, api)
-            # Add languages
-            self.processLanguages(req, game)
-            # Add app type
-            self.processAppType(req, game)
-            # Add OS options
-            self.processOsOptions(req, game)
-            # Add Associations (dev, publisher)
-            self.processAssociations(req, game)
-
-            # Add changelog for app creation
-            gamechange = GameChange(
-                change_number=self.changenum,
-                game=game,
-                changelog=GameChange.changelog_builder(
-                    GameChange.ADD,
-                    game.appid,
-                ),
-                action=GameChange.ADD
-            )
-            gamechange.save()
-
-            # Return the game after the app has been created in the DB
-            return game
-
-        # except:
-        #     print('Error fetching data from steamkit for app: ' + str(appid))
+        # Return the game after the app has been created in the DB
+        return game
 
     # Create boolean fields for new game
     def processBoolFields(self, req, game):
@@ -362,44 +339,30 @@ class ModelProcessor():
     #####################################################
     # Update an app that already exists in our database #
     #####################################################
-    def processExistingGame(self, appid, changenum, worker, api):
+    def processExistingGame(self, appid, changenum, api, payload):
         # Grab the game info from the steamkit worker
-        gameInfo = worker.get_product_info(appids=[appid])
+        gameInfo = payload
 
-        if gameInfo is None:
-            print('ERROR ' + str(appid) + ' steamkit res is None.')
+        gameInfo = gameInfo['apps'][0]['appinfo']['common']
 
-        # Check if app section exists, if it doesn't dont try and process the app
-        elif 'apps' not in gameInfo:
-            print('ERROR | ' + str(appid) +
-                  ' has no gameInfo["apps"] section. Response --> ' + str(gameInfo))
+        # Set changenumber
+        self.changenum = changenum
 
-        # Check if the common section exists, if it doesn process the common fields
-        elif 'common' in gameInfo['apps'][0]['appinfo']:
-            gameInfo = gameInfo['apps'][0]['appinfo']['common']
+        # Grab the game object we are checking for changes on
+        game = Game.objects.get(appid=appid)
 
-            # Set changenumber
-            self.changenum = changenum
-
-            # Grab the game object we are checking for changes on
-            game = Game.objects.get(appid=appid)
-
-            # Checks to make
-            self.easyCheckFields(game, gameInfo)
-            self.intCheckFields(game, gameInfo)
-            self.boolFieldChecks(game, gameInfo)
-            self.priceChangeCheck(game, api.priceRequest(game.appid))
-            self.categoryUpdate(game, gameInfo, api)
-            self.genreUpdate(game, gameInfo, api)
-            self.primaryGenreUpdate(game, gameInfo, api)
-            self.associationsUpdate(game, gameInfo)
-            self.appTypeUpdate(game, gameInfo)
-            self.osListUpdate(game, gameInfo)
-            self.languageUpdate(game, gameInfo)
-
-        # Game doesn't have a common section, skip.
-        else:
-            print('No common section for existing app, skipping.. ' + str(appid))
+        # Checks to make
+        self.easyCheckFields(game, gameInfo)
+        self.intCheckFields(game, gameInfo)
+        self.boolFieldChecks(game, gameInfo)
+        self.priceChangeCheck(game, api.priceRequest(game.appid))
+        self.categoryUpdate(game, gameInfo, api)
+        self.genreUpdate(game, gameInfo, api)
+        self.primaryGenreUpdate(game, gameInfo, api)
+        self.associationsUpdate(game, gameInfo)
+        self.appTypeUpdate(game, gameInfo)
+        self.osListUpdate(game, gameInfo)
+        self.languageUpdate(game, gameInfo)
 
     # Checks all non relational string represented fields (ex. name, release_state, icon, etc.)
     def easyCheckFields(self, game, gameInfo):

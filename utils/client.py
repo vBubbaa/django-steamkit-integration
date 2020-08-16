@@ -100,7 +100,7 @@ class SteamWorker(object):
 
             return resp
         except:
-            print('Error in client get_product_info | appid: ' + appids[0])
+            print('Error in client get_product_info | appid: ' + str(appids[0]))
             return {}
 
     # Returns the changes that have occured on steam since a given change number
