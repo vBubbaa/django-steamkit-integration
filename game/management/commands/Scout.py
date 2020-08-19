@@ -18,23 +18,24 @@ from utils.SteamApiHandler import SteamApi
 # - python manage.py Scout
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 class Command(BaseCommand):
+    # Init global vars
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Client instance
+        self.client = SteamWorker()
+        # Model Processor Instance
+        self.processor = ModelProcessor()
+        # In house API wrapper instance
+        self.api = SteamApi()
+
     def handle(self, *args, **options):
         print('-'*30)
         print('Starting Scout...')
         
-        # Client instance
-        client = SteamWorker()
-
-        # Model Processor Instance
-        processor = ModelProcessor()
-
-        # In house API wrapper instance
-        api = SteamApi()
-        
         # Attempt login until the login is successful
         while True:
             try:
-                client.login()
+                self.client.login()
                 break
             except:
                 print('Login failed, waiting for connection...')
@@ -44,13 +45,15 @@ class Command(BaseCommand):
         print('-'*30)
 
         # Get the current changelog to start from
-        currentChangeNum = client.get_product_changes(0)['current_change_number']
+        currentChangeNum = self.client.get_product_changes(0)['current_change_number']
 
         # Start mointoring changelogs
         while True:
-            if client.isConnected():
+            if self.client.isConnected():
+                # First, check for exists tasks to process first.
+                self.handleTasks()
                 # Get the changes from the current change number
-                changes = client.get_product_changes(currentChangeNum)
+                changes = self.client.get_product_changes(currentChangeNum)
                 # Check if changes have occured by comparing change number values
                 if currentChangeNum != changes['current_change_number']:
                     print('Changes have occured')
@@ -63,26 +66,11 @@ class Command(BaseCommand):
                             print(str(change))
                             # Grab the appid of the change so we can get the app deatils.
                             appid = change['appid']
-                            payload = client.get_product_info([appid])
-                            print(str(payload))
-
-                            # Check for payload faults
-                            if payload == None or 'apps' not in payload or 'appinfo' not in payload['apps'][0] or 'common' not in payload['apps'][0]['appinfo']:
-                                # Log appid, change data, payload data
-                                print('Skipping due to insufficient response data for app: ' + str(appid) + ' and change data: ' + str(change) + ' and payload: ' + str(payload))
                             
-                            # If there is valid response data, send the request to process it with out model processor
-                            else:
-                                # Check if the game exists in our db so we can either process existing, or process new
-                                # If game exists in our DB
-                                if Game.objects.filter(appid=appid):
-                                    processor.processExistingGame(appid, change['change_number'], api, payload)
-                                # Game does not exist in our DB
-                                else:
-                                    processor.processNewGame(appid, change['change_number'], api, payload)
+                            self.handleProcessDispatch(appid, change['change_number'])
 
-                            # Timeout for 5 seconds to avoid excessive requests.
-                            time.sleep(5)
+                            # Timeout for 10 seconds to avoid excessive requests.
+                            time.sleep(10)
 
                         # Set the new changenumber
                         currentChangeNum = changes['current_change_number']
@@ -90,12 +78,43 @@ class Command(BaseCommand):
                 # No changes have occured, wait 10 seconds to rescan steam.
                 else:
                     print('No Changes have occured')
-                    time.sleep(10)
+                    time.sleep(60)
 
             # Connection error occured, wait 10 seconds before retrying.
             else:
                 print('Steam Connection Error. client.isConnected() returned false.')
                 time.sleep(10)
+
+    # Iterate tasks and process those apps (not from PICSChanges)
+    def handleTasks(self):
+        # See if any tasks exist
+        if Task.objects.all():  
+            print('Tasks are in queue, startin processing')
+            for task in Task.objects.all():
+                # Dispatch the app, then delete the task 
+                self.handleProcessDispatch(task.appid, task.changenumber)
+                task.delete()
+
+    
+    # Grabs app info via steam and dispatches the payload to be processed via model processor
+    def handleProcessDispatch(self, appid, changenumber):
+        # Grab app info from steam client
+        payload = self.client.get_product_info([appid])
+
+        # Check for payload faults
+        if payload == None or 'apps' not in payload or 'appinfo' not in payload['apps'][0] or 'common' not in payload['apps'][0]['appinfo']:
+            # Log appid, change data, payload data
+            print('Skipping due to insufficient response data for app: ' + str(appid) + ' and change data: ' + str(changenumber))
+        
+        # If there is valid response data, send the request to process it with out model processor
+        else:
+            # Check if the game exists in our db so we can either process existing, or process new
+            # If game exists in our DB
+            if Game.objects.filter(appid=appid):
+                self.processor.processExistingGame(appid, changenumber, self.api, payload)
+            # Game does not exist in our DB
+            else:
+                self.processor.processNewGame(appid, changenumber, self.api, payload)
 
 
 
