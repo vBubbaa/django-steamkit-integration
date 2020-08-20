@@ -32,14 +32,7 @@ class Command(BaseCommand):
         print('-'*30)
         print('Starting Scout...')
         
-        # Attempt login until the login is successful
-        while True:
-            try:
-                self.client.login()
-                break
-            except:
-                print('Login failed, waiting for connection...')
-                time.sleep(10)
+        self.client.login()
         
         print('Login Successful.')
         print('-'*30)
@@ -49,7 +42,7 @@ class Command(BaseCommand):
 
         # Start mointoring changelogs
         while True:
-            if self.client.isConnected():
+            if self.client.steam.connected:
                 # First, check for exists tasks to process first.
                 self.handleTasks()
                 # Get the changes from the current change number

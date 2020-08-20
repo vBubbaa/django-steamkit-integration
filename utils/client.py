@@ -14,8 +14,6 @@ import vdf
 # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 class SteamWorker(object):
     def __init__(self):
-        self.logged_on_once = False
-
         self.steam = client = SteamClient()
         client.set_credential_location(".")
 
@@ -23,19 +21,29 @@ class SteamWorker(object):
         def handle_error(result):
             print("Logon result: %s", repr(result))
 
+        @client.on("channel_secured")
+        def send_login():
+            if self.steam.relogin_available:
+                self.steam.relogin()
+
         @client.on("connected")
         def handle_connected():
             print("Connected to %s", client.current_server_addr)
 
-        @client.on("channel_secured")
-        def send_login():
-            if self.logged_on_once and self.steam.relogin_available:
-                self.steam.relogin()
+        @client.on("reconnect")
+        def handle_reconnect(delay):
+            print("Reconnect in %ds...", delay)
+
+        @client.on("disconnected")
+        def handle_disconnect():
+            print("Disconnected.")
+
+            if self.relogin_available:
+                print("Reconnecting...")
+                client.reconnect(maxdelay=30)
 
         @client.on("logged_on")
         def handle_after_logon():
-            self.logged_on_once = True
-
             print("-"*30)
             print("Logged on as: %s", client.user.name)
             print("Community profile: %s", client.steam_id.community_url)
@@ -43,35 +51,9 @@ class SteamWorker(object):
             print("Last logoff: %s", client.user.last_logoff)
             print("-"*30)
 
-        @client.on("disconnected")
-        def handle_disconnect():
-            print("Disconnected.")
-
-            if self.logged_on_once:
-                print("Reconnecting...")
-                client.reconnect(maxdelay=30)
-
-        @client.on("reconnect")
-        def handle_reconnect(delay):
-            print("Reconnect in %ds...", delay)
-
     # We use an anonymous login rather than an actual account.
     def login(self):
         self.steam.anonymous_login()
-
-    def isConnected(self):
-        if self.steam.connected:
-            return True
-        else:
-            return False
-
-    def close(self):
-        if self.steam.logged_on:
-            self.logged_on_once = False
-            print("Logout")
-            self.steam.logout()
-        if self.steam.connected:
-            self.steam.disconnect()
 
     # Gets the product information of the given apps in [] form. Also accepts packages, but we aren't worried about that yet.
     def get_product_info(self, appids=[], packageids=[]):
