@@ -21,19 +21,17 @@ class Command(BaseCommand):
     # Init global vars
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Client instance
-        self.client = SteamWorker()
         # Model Processor Instance
         self.processor = ModelProcessor()
         # In house API wrapper instance
         self.api = SteamApi()
+        # Client object
+        self.client = SteamWorker()
 
     def handle(self, *args, **options):
         print('-'*30)
         print('Starting Scout...')
-        
-        self.client.login()
-        
+        self.client.steam.anonymous_login()
         print('Login Successful.')
         print('-'*30)
 
@@ -88,7 +86,6 @@ class Command(BaseCommand):
                 self.handleProcessDispatch(task.appid, task.changenumber)
                 task.delete()
 
-    
     # Grabs app info via steam and dispatches the payload to be processed via model processor
     def handleProcessDispatch(self, appid, changenumber):
         # Grab app info from steam client
@@ -108,8 +105,6 @@ class Command(BaseCommand):
             # Game does not exist in our DB
             else:
                 self.processor.processNewGame(appid, changenumber, self.api, payload)
-
-
 
         
         
