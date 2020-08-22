@@ -5,6 +5,7 @@ from steam.core.msg import MsgProto
 from steam.enums.emsg import EMsg
 from steam.utils.proto import proto_to_dict
 import vdf
+import time
 
 
 class SteamWorker(object):
@@ -29,6 +30,11 @@ class SteamWorker(object):
         def handle_reconnect(delay):
             print("Reconnect in %ds...", delay)
 
+        @client.on("disconnected")
+        def handle_disconnect():
+            print("Disconnected.")
+            client.reconnect(maxdelay=30)
+
         @client.on("logged_on")
         def handle_after_logon():
             print("-"*30)
@@ -38,24 +44,8 @@ class SteamWorker(object):
             print("Last logoff: %s", client.user.last_logoff)
             print("-"*30)
 
-        @client.on("disconnected")
-        def handle_disconnect():
-            print("Disconnected.")
-
-            if self.logged_on_once:
-                print("Reconnecting...")
-                client.reconnect(maxdelay=30)
-
     def prompt_login(self):
         self.steam.cli_login()
-
-    def close(self):
-        if self.steam.logged_on:
-            self.logged_on_once = False
-            print("Logout")
-            self.steam.logout()
-        if self.steam.connected:
-            self.steam.disconnect()
 
     def get_product_info(self, appids=[], packageids=[]):
         try:
