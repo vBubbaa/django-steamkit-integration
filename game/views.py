@@ -62,6 +62,12 @@ class GameList(generics.ListAPIView):
         return queryset
 
 
+class RecentGames(generics.ListAPIView):
+    serializer_class = GameSerializer
+
+    def get_queryset(self):
+        return Game.objects.all().order_by('-id')[:9]
+
 
 # Returns a single app from our DB
 # @URL: games/<int:appid>
