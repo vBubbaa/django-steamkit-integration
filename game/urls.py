@@ -10,6 +10,7 @@ urlpatterns = [
     path('games/<int:appid>', views.GameDetail.as_view()),
     # 9 most recent games
     path('recentgames/', views.RecentGames.as_view()),
+    # 10 most recent change logs
     path('logs/', views.LogList.as_view()),
     path('logstoday/', views.LogsToday.as_view()),
     path('gamelogs/<int:appid>', views.GameLogs.as_view()),

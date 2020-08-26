@@ -17,35 +17,33 @@ class SteamWorker(object):
         def handle_error(result):
             print("Logon result: %s", repr(result))
 
-        @client.on("channel_secured")
-        def send_login():
-            if self.steam.relogin_available:
-                self.steam.relogin()
-
         @client.on("connected")
         def handle_connected():
             print("Connected to %s", client.current_server_addr)
 
-        @client.on("reconnect")
-        def handle_reconnect(delay):
-            print("Reconnect in %ds...", delay)
-
         @client.on("disconnected")
         def handle_disconnect():
             print("Disconnected.")
-            client.reconnect(maxdelay=30)
+            self.tryReconnect()
 
-        @client.on("logged_on")
-        def handle_after_logon():
-            print("-"*30)
-            print("Logged on as: %s", client.user.name)
-            print("Community profile: %s", client.steam_id.community_url)
-            print("Last logon: %s", client.user.last_logon)
-            print("Last logoff: %s", client.user.last_logoff)
-            print("-"*30)
+    # Attempt reconnects until it succeeds
+    def tryReconnect(self):
+        connected = False
+        fails = 0
 
-    def prompt_login(self):
-        self.steam.cli_login()
+        while not connected:
+            try:
+                self.ClientConnect()
+                connected = True
+            except Exception as e:
+                fails += 1
+                print('Reconnection failed with error: ' + str(e))
+                print('Failed reconnect attempts: ' + str(fails))
+                time.sleep(60)
+                pass
+
+    def ClientConnect(self):
+        self.steam.anonymous_login()
 
     def get_product_info(self, appids=[], packageids=[]):
         try:

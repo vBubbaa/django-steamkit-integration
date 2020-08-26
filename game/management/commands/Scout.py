@@ -31,7 +31,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print('-'*30)
         print('Starting Scout...')
-        self.client.steam.anonymous_login()
+        self.client.tryReconnect()
         print('Login Successful.')
         print('-'*30)
 
