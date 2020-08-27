@@ -261,14 +261,16 @@ class ModelProcessor():
                         str(game.appid), 'genres')
                     print('Genre tag response via API: ' + str(tagRequest))
 
-                filteredItem = [
-                    prim for prim in tagRequest if prim['id'] == str(pg)]
-                # Sometimes games have unknown tags, in that case check to see if it exists
-                if filteredItem:
-                    g = Genre.objects.create(
-                        genre_id=pg, genre_description=filteredItem[0]['description'])
-                else:
-                    genreExists = False
+                # Check for rempty response
+                if tagRequest is not None:
+                    filteredItem = [
+                        prim for prim in tagRequest if prim['id'] == str(pg)]
+                    # Sometimes games have unknown tags, in that case check to see if it exists
+                    if filteredItem:
+                        g = Genre.objects.create(
+                            genre_id=pg, genre_description=filteredItem[0]['description'])
+                    else:
+                        genreExists = False
 
             # If the genre exists (IE not an unknown genre, then add it)
             if genreExists:
@@ -736,13 +738,14 @@ class ModelProcessor():
                         str(game.appid), 'genres')
                     print('Genre tag response via API: ' + str(tagRequest))
 
-                filteredItem = [
-                    prim for prim in tagRequest if prim['id'] == str(pg)]
-                if filteredItem:
-                    g = Genre.objects.create(
-                        genre_id=pg, genre_description=filteredItem[0]['description'])
-                else:
-                    genreExists = False
+                if tagRequest is not None:
+                    filteredItem = [
+                        prim for prim in tagRequest if prim['id'] == str(pg)]
+                    if filteredItem:
+                        g = Genre.objects.create(
+                            genre_id=pg, genre_description=filteredItem[0]['description'])
+                    else:
+                        genreExists = False
 
             if genreExists:
                 # Compare the game primary genre to the steamkit responeses primary genre and update accordingly
