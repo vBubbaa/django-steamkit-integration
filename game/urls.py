@@ -13,7 +13,7 @@ urlpatterns = [
     # 10 most recent change logs
     path('logs/', views.LogList.as_view()),
     path('logstoday/', views.LogsToday.as_view()),
-    path('gamelogs/<int:appid>', views.GameLogs.as_view()),
+    path('gamelogs/<int:appid>/', views.GameLogs.as_view()),
     path('appcount/', views.AppCount.as_view()),
     path('alllogs/', views.AllLogs.as_view()),
     path('developers/', views.DeveloperList.as_view()),
@@ -26,5 +26,5 @@ urlpatterns = [
          views.GamesByPublisher.as_view()),
     path('languages/', views.LanguageList.as_view()),
     path('apptypes/', views.AppTypeList.as_view()),
-    path('steamspy/<int:appid>', views.SteamSpyView.as_view()),
+    path('steamspy/<int:appid>/', views.SteamSpyView.as_view()),
 ]

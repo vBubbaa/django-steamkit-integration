@@ -51,7 +51,7 @@ class GenreSerializer(ModelSerializer):
 class CategorySerializer(ModelSerializer):
     class Meta:
         model = Category
-        fields = ['category_description']
+        fields = '__all__'
 
 
 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
@@ -71,6 +71,8 @@ class GameSerializer(ModelSerializer):
     primary_genre = GenreSerializer()
     categories = CategorySerializer(many=True)
     #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
+    # Date field format
+    steam_release_date = serializers.DateTimeField(format='%Y-%m-%d')
 
     class Meta:
         model = Game
@@ -81,6 +83,7 @@ class GameNameSerializer(ModelSerializer):
     class Meta:
         model = Game
         fields = ['name', 'appid', 'slug']
+
 
 class DeveloperPageSerializer(ModelSerializer):
     # Method to get game count of developer
@@ -93,6 +96,7 @@ class DeveloperPageSerializer(ModelSerializer):
     def get_game_count(self, developer):
         return Game.objects.filter(developer=developer).count()
 
+
 class PublisherPageSerializer(ModelSerializer):
     # Method to get game count of developer
     game_count = serializers.SerializerMethodField()
@@ -103,6 +107,7 @@ class PublisherPageSerializer(ModelSerializer):
 
     def get_game_count(self, publisher):
         return Game.objects.filter(publisher=publisher).count()
+
 
 class GenrePageSerializer(ModelSerializer):
     # Method to get game count of developer

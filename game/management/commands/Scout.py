@@ -48,6 +48,7 @@ class Command(BaseCommand):
                 # Check if changes have occured by comparing change number values
                 if currentChangeNum != changes['current_change_number']:
                     print('Changes have occured')
+                    print(str(changes))
                     # If here, changes have occured
                     # Check if any of the changes where app changes (we aren't tracking any other changes)
                     if changes.get('app_changes'):
