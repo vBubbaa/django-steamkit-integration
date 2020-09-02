@@ -4,7 +4,7 @@ import os
 # Else (env var 'sc_server' is not dev (prod)) import the prod specific settings
 if os.environ.get('SC_SERVER') == 'dev':
     from .development import *
-    STEAM_REDIRECT_URL = 'http://127.0.0.1:8080'
+    STEAM_REDIRECT_URL = 'http://127.0.0.1:3000'
 else:
     from .production import *
     STEAM_REDIRECT_URL = 'https://steamcomparer.com'
