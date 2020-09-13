@@ -21,7 +21,11 @@ from utils.ModelProcessor import ModelProcessor
 import os
 from django.conf import settings
 import json
+from django.core.paginator import Paginator
+from game.pagination import StandardResultsSetPagination
 
+
+# Builds location for friends (lon, lat) format
 class LocationBuilder(APIView):
     def __init__(self):
         self.steamid = None
@@ -82,37 +86,26 @@ class LocationBuilder(APIView):
         self.locationsBuilder()
         return Response(self.res)
 
-    
 
-# Endpoint route: userapi/useroverview/<int:steamid>
-class UserOverview(APIView):
+# Endpoint route: userapi/userover/<int:steamid>/games/
+class UserOverviewGames(APIView):
+    pagination_class = StandardResultsSetPagination
+
     def __init__(self):
+        self.steamid = ""
+        self.res = {}
+        self.games = []
+        self.libraryCost = 0
         # Steam web api method of to grab owned games by player
         self.method = '/IPlayerService/GetOwnedGames/v001'
-        # Passed back res with all games parsed with correct information from out database
-        self.res = {}
-        self.isPrivate = False
-        # Steamid we will set by the URL parameter @steamid
-        self.steamid = None
-        self.games = []
-        self.vacInfo = []
-        self.userDetails = []
-        self.libraryCost = 0
-        self.api = SteamApi()
 
-
-    # Func to get games from request, then get the additional game information from our database
-    # Will return a json object with:
-    #   - Total game count
-    #   - A list of games: (Game Name, Appid, Current Price)
-    # This parsed response will be pass back to the enpoint request /userapi/useroverview/<int:steamid>
+    # Grab user games
     def getGames(self):
         url = settings.STEAM_ROOT_ENDPOINT + self.method
         params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
         request = requests.get(url, params)
         response = request.json()
         print('getGames res: ' + str(response))
-        self.res['game_count'] = response['response']['game_count']
         games = response['response']['games']
 
         for game in games:
@@ -125,9 +118,11 @@ class UserOverview(APIView):
                 formatGame = {
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
+                    'slug': dbgame.slug,
+                    'inDatabase': True,
                     'current_price': str(dbgame.current_price.price),
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
-                    'image': 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/' + str(dbgame.appid) + '/' + str(dbgame.logo) + '.jpg'
+                    'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(game['appid']) + '/header.jpg?t=1593505394'
                 }
                 # Append the game to our games list we will pass back
                 self.games.append(formatGame)
@@ -143,6 +138,7 @@ class UserOverview(APIView):
                 formatGame = {
                     'appid': str(game['appid']),
                     'name': game['name'],
+                    'inDatabase': False,
                     'current_price': None,
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
                     'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(game['appid']) + '/header.jpg?t=1593505394'
@@ -156,6 +152,27 @@ class UserOverview(APIView):
         # Append the game list to the response
         self.res['games'] = self.games
         self.res['libcost'] = round(self.libraryCost, 2)
+
+
+    def get(self, request, *args, **kwargs):
+        self.steamid = kwargs.get('steamid')
+        self.getGames()
+        return Response(self.res)
+        
+
+
+# Endpoint route: userapi/useroverview/<int:steamid>/
+class UserOverview(APIView):
+    def __init__(self):
+        # Passed back res with all games parsed with correct information from out database
+        self.res = {}
+        self.isPrivate = False
+        # Steamid we will set by the URL parameter @steamid
+        self.steamid = None
+        self.vacInfo = []
+        self.userDetails = []
+        self.libraryCost = 0
+        self.api = SteamApi()
 
     def getVacs(self):
         vacs = self.api.getVacInfo(self.steamid)
@@ -173,8 +190,6 @@ class UserOverview(APIView):
         self.steamid = kwargs.get('steamid')
         self.getUserDetails()
         self.getVacs()
-        if self.isPrivate != True:
-            self.getGames()
         return Response(self.res)
 
 

@@ -15,7 +15,6 @@ from game.models import Game, GameChange, Developer, Publisher, Genre, Languages
 from django.shortcuts import render
 
 
-
 # Returns all apps in our DB
 # @URL: games/
 class GameList(generics.ListAPIView):
