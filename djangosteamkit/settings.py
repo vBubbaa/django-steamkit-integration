@@ -35,8 +35,43 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Application definition
+# Admins to mail logs to
+ADMINS = (
+    ('tyler', 'vbubbaadev@gmail.com'),
+    ('ryan', 'Ryan@itconnected.tech'),
+)
 
+# Logging conf
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+SERVER_EMAIL = 'steamcomaprer@steamcomparer.com'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+# Our site's gmail that will forward bug reports to our steamcomparer emails
+EMAIL_HOST_USER = 'steamcomparer@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get('SC_EMAIL_PASSWORD')
+
+
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
