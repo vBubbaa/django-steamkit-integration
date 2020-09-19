@@ -68,6 +68,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'steamcomparer@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('SC_EMAIL_PASSWORD')
 
+SERVER_EMAIL = 'steamcomparer@gmail.com'
+
 
 # Application definition
 INSTALLED_APPS = [
