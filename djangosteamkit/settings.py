@@ -47,9 +47,14 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
             'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+            'include_html': True,
+        },
+        'logfile': {
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': 'django-steamkit-integration.log'
+        },
     },
     'loggers': {
         'django.request': {
@@ -57,7 +62,17 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-    }
+        'django': {
+            'handlers': ['logfile'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django-steamkit-integration': {
+            'handlers': ['logfile'],
+            'level': 'WARNING',
+            'propagate': False
+        },
+    },
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
