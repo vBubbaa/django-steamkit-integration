@@ -10,7 +10,7 @@ from concurrent import futures
 from collections import Counter
 import requests
 from django.core.management import call_command
-from django.conf import settings
+from djangosteamkit.secrets import STEAM_API_KEY
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from game.models import Game, Task
@@ -102,7 +102,7 @@ class UserOverviewGames(APIView):
     # Grab user games
     def getGames(self):
         url = settings.STEAM_ROOT_ENDPOINT + self.method
-        params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
+        params = {'key': STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
         request = requests.get(url, params)
         response = request.json()
         print('getGames res: ' + str(response))

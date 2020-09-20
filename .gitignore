@@ -122,4 +122,7 @@ dmypy.json
 # Steamkit Stuff
 cm_servers.json
 
+# Secrets
+secrets.py
+
 # End of https://www.gitignore.io/api/django

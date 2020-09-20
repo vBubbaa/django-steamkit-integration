@@ -2,7 +2,7 @@ import gevent.monkey
 gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
-from django.conf import settings
+from djangosteamkit.secrets import STEAM_API_KEY
 import requests
 import os
 
@@ -10,11 +10,10 @@ import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from concurrent import futures
-from django.conf import settings
 
 class SteamApi():
     def __init__(self):
-        self.key = '?key=' + settings.STEAM_API_KEY
+        self.key = '?key=' + STEAM_API_KEY
         self.baseurl = 'http://api.steampowered.com'
         self.format = '&format=json'
 

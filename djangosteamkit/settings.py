@@ -1,3 +1,4 @@
+from djangosteamkit.secrets import SC_EMAIL_PASSWORD
 import os
 
 # If we are on the dev server (env var 'sc_server' is dev) import the dev specific settings
@@ -20,7 +21,6 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SC_SECRET_KEY')
 
-STEAM_API_KEY = os.environ.get('STEAM_KEY')
 STEAM_ROOT_ENDPOINT = 'http://api.steampowered.com'
 
 LOGIN_REDIRECT_URL = '/'
@@ -81,7 +81,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 # Our site's gmail that will forward bug reports to our steamcomparer emails
 EMAIL_HOST_USER = 'steamcomparer@gmail.com'
-EMAIL_HOST_PASSWORD = os.environ.get('SC_EMAIL_PASSWORD')
+EMAIL_HOST_PASSWORD = SC_EMAIL_PASSWORD
 
 SERVER_EMAIL = 'steamcomparer@gmail.com'
 
