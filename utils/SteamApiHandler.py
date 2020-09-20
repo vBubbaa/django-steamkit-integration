@@ -55,7 +55,7 @@ class SteamApi():
     def getFriendsList(self, steamid):
         method = '/ISteamUser/GetFriendList/v0001/'
         url = settings.STEAM_ROOT_ENDPOINT + method
-        params = {'key': settings.STEAM_API_KEY,
+        params = {'key': STEAM_API_KEY,
                   'steamid': steamid, 'relationship': 'friend'}
         request = requests.get(url, params)
         response = request.json()
