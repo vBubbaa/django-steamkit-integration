@@ -11,6 +11,7 @@ from collections import Counter
 import requests
 from django.core.management import call_command
 from djangosteamkit.secrets import STEAM_API_KEY
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from game.models import Game, Task

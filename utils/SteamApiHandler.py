@@ -3,6 +3,7 @@ gevent.monkey.patch_socket()
 gevent.monkey.patch_ssl()
 
 from djangosteamkit.secrets import STEAM_API_KEY
+from django.conf import settings
 import requests
 import os
 
