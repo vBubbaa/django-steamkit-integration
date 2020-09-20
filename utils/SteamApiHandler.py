@@ -4,6 +4,7 @@ gevent.monkey.patch_ssl()
 
 from django.conf import settings
 import requests
+import os
 
 # Threading for faster response building
 import threading
@@ -13,7 +14,7 @@ from django.conf import settings
 
 class SteamApi():
     def __init__(self):
-        self.key = '?key=' + settings.STEAM_API_KEY
+        self.key = '?key=' + os.environ.get('STEAM_KEY')
         self.baseurl = 'http://api.steampowered.com'
         self.format = '&format=json'
 
@@ -54,7 +55,7 @@ class SteamApi():
     def getFriendsList(self, steamid):
         method = '/ISteamUser/GetFriendList/v0001/'
         url = settings.STEAM_ROOT_ENDPOINT + method
-        params = {'key': settings.STEAM_API_KEY,
+        params = {'key': os.environ.get('STEAM_KEY'),
                   'steamid': steamid, 'relationship': 'friend'}
         request = requests.get(url, params)
         response = request.json()

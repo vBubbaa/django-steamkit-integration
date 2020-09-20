@@ -102,7 +102,7 @@ class UserOverviewGames(APIView):
     # Grab user games
     def getGames(self):
         url = settings.STEAM_ROOT_ENDPOINT + self.method
-        params = {'key': settings.STEAM_API_KEY, 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
+        params = {'key': os.environ.get('STEAM_KEY'), 'steamid': self.steamid, 'include_played_free_games': '1', 'include_appinfo': '1', 'format': 'json'}
         request = requests.get(url, params)
         response = request.json()
         print('getGames res: ' + str(response))
