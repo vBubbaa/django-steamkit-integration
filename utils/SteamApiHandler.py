@@ -9,10 +9,11 @@ import requests
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from concurrent import futures
+from django.conf import settings
 
 class SteamApi():
     def __init__(self):
-        self.key = '?key=88858A1C0CAAE1FB4D3167905162BD13'
+        self.key = '?key=' + str(settings.STEAM_API_KEY)
         self.baseurl = 'http://api.steampowered.com'
         self.format = '&format=json'
 
@@ -53,7 +54,7 @@ class SteamApi():
     def getFriendsList(self, steamid):
         method = '/ISteamUser/GetFriendList/v0001/'
         url = settings.STEAM_ROOT_ENDPOINT + method
-        params = {'key': settings.STEAM_API_KEY,
+        params = {'key': str(settings.STEAM_API_KEY),
                   'steamid': steamid, 'relationship': 'friend'}
         request = requests.get(url, params)
         response = request.json()
