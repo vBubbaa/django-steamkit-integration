@@ -114,14 +114,17 @@ class UserOverviewGames(APIView):
             if Game.objects.filter(appid=game['appid']).exists():
                 # Get the game
                 dbgame = Game.objects.get(appid=game['appid'])
-                price = dbgame.current_price.price
+                try:
+                    price = dbgame.current_price.price
+                except:
+                    price = None
                 # Grab the information of the game that we need and format it into an object
                 formatGame = {
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
                     'slug': dbgame.slug,
                     'inDatabase': True,
-                    'current_price': str(dbgame.current_price.price),
+                    'current_price': str(price),
                     'total_playtime': str(round(game['playtime_forever'] / 60, 2)),
                     'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(game['appid']) + '/header.jpg?t=1593505394'
                 }
@@ -255,10 +258,14 @@ class GetComparedGames(APIView):
         def threadGames(game):
             if Game.objects.filter(appid=game).exists():
                 dbgame = Game.objects.get(appid=game)
+                try:
+                    price = dbgame.current_price.price
+                except:
+                    price = None
                 formatGame = {
                     'appid': str(dbgame.appid),
                     'name': dbgame.name,
-                    'current_price': str(dbgame.current_price.price),
+                    'current_price': str(price),
                     'image': 'https://steamcdn-a.akamaihd.net/steam/apps/' + str(dbgame.appid) + '/header.jpg'
                 }
                 self.commonGames.append(formatGame)
