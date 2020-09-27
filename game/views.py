@@ -225,9 +225,13 @@ class GameLogs(generics.ListAPIView):
 
 class SteamSpyView(APIView):
     def get(self, request, appid):
-        if appid is not None and appid != '':
-            request = requests.get(
-                'https://steamspy.com/api.php?request=appdetails&appid=' + str(appid))
-            print(request)
+        try:
+            if appid is not None and appid != '':
+                request = requests.get(
+                    'https://steamspy.com/api.php?request=appdetails&appid=' + str(appid))
+                print(request)
 
-        return Response(request.json())
+            return Response(request.json())
+        except:
+            request = None
+            return Response(request)
