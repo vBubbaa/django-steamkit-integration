@@ -121,6 +121,7 @@ dmypy.json
 
 # Steamkit Stuff
 cm_servers.json
+steamcomaprer_sentry.bin
 
 # Secrets
 secrets.py

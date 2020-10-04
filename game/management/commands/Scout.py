@@ -31,7 +31,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print('-'*30)
         print('Starting Scout...')
-        self.client.tryReconnect()
+        self.client.client_login()
         print('Login Successful.')
         print('-'*30)
 

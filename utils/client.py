@@ -5,11 +5,13 @@ from steam.core.msg import MsgProto
 from steam.enums.emsg import EMsg
 from steam.utils.proto import proto_to_dict
 import vdf
-import time
+from djangosteamkit.secrets import SC_STEAM_LOGIN
 
 
 class SteamWorker(object):
     def __init__(self):
+        self.logged_on_once = False
+
         self.steam = client = SteamClient()
         client.set_credential_location(".")
 
@@ -21,29 +23,45 @@ class SteamWorker(object):
         def handle_connected():
             print("Connected to %s", client.current_server_addr)
 
+        @client.on("channel_secured")
+        def send_login():
+            if self.logged_on_once and self.steam.relogin_available:
+                self.steam.relogin()
+
+        @client.on("logged_on")
+        def handle_after_logon():
+            self.logged_on_once = True
+
+            print("-"*30)
+            print("Logged on as: %s", client.user.name)
+            print("Community profile: %s", client.steam_id.community_url)
+            print("Last logon: %s", client.user.last_logon)
+            print("Last logoff: %s", client.user.last_logoff)
+            print("-"*30)
+
         @client.on("disconnected")
         def handle_disconnect():
             print("Disconnected.")
-            self.tryReconnect()
 
-    # Attempt reconnects until it succeeds
-    def tryReconnect(self):
-        connected = False
-        fails = 0
+            if self.logged_on_once:
+                print("Reconnecting...")
+                client.reconnect(maxdelay=30)
 
-        while not connected:
-            try:
-                self.ClientConnect()
-                connected = True
-            except Exception as e:
-                fails += 1
-                print('Reconnection failed with error: ' + str(e))
-                print('Failed reconnect attempts: ' + str(fails))
-                time.sleep(60)
-                pass
+        @client.on("reconnect")
+        def handle_reconnect(delay):
+            print("Reconnect in %ds...", delay)
 
-    def ClientConnect(self):
-        self.steam.anonymous_login()
+        @client.on('auth_code_required')
+        def auth_code_prompt(is_2fa, mismatch):
+            if is_2fa:
+                code = input("Enter 2FA Code: ")
+                client.login(two_factor_code=code, **SC_STEAM_LOGIN)
+            else:
+                code = input("Enter Email Code: ")
+                client.login(auth_code=code, **SC_STEAM_LOGIN)
+
+    def client_login(self):
+        self.steam.login(**SC_STEAM_LOGIN)
 
     def get_product_info(self, appids=[], packageids=[]):
         try:
