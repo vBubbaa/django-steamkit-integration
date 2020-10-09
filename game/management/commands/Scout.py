@@ -40,48 +40,54 @@ class Command(BaseCommand):
 
         # Start mointoring changelogs
         while True:
-            if self.client.steam.connected:
-                # First, check for exists tasks to process first.
-                self.handleTasks()
-                # Get the changes from the current change number
-                changes = self.client.get_product_changes(currentChangeNum)
-                # Check if changes have occured by comparing change number values
-                if currentChangeNum != changes['current_change_number']:
-                    print('Changes have occured')
-                    print(str(changes))
-                    # If here, changes have occured
-                    # Check if any of the changes where app changes (we aren't tracking any other changes)
-                    if changes.get('app_changes'):
-                        print('Changes: ' + str(changes.get('app_changes')))
-                        # Iterate changes and process each appid
-                        for change in changes.get('app_changes'):
-                            print(str(change))
-                            # Grab the appid of the change so we can get the app deatils.
-                            appid = change['appid']
-                            
-                            self.handleProcessDispatch(appid, change['change_number'])
+            if self.client.steam.connected and self.client.steam.logged_on:
+                try:
+                    # First, check for exists tasks to process first.
+                    self.handleTasks()
+                    # Get the changes from the current change number
+                    changes = self.client.get_product_changes(currentChangeNum)
+                    # Check if changes have occured by comparing change number values
+                    if currentChangeNum != changes['current_change_number']:
+                        print('Changes have occured')
+                        print(str(changes))
+                        # If here, changes have occured
+                        # Check if any of the changes where app changes (we aren't tracking any other changes)
+                        if changes.get('app_changes'):
+                            print('Changes: ' + str(changes.get('app_changes')))
+                            # Iterate changes and process each appid
+                            for change in changes.get('app_changes'):
+                                print(str(change))
+                                # Grab the appid of the change so we can get the app deatils.
+                                appid = change['appid']
+                                
+                                self.handleProcessDispatch(appid, change['change_number'])
 
-                            # Timeout for 10 seconds to avoid excessive requests.
-                            time.sleep(10)
+                                # Timeout for 10 seconds to avoid excessive requests.
+                                time.sleep(10)
 
-                        # Set the new changenumber
-                        currentChangeNum = changes['current_change_number']
+                            # Set the new changenumber
+                            currentChangeNum = changes['current_change_number']
 
-                # No changes have occured, wait 10 seconds to rescan steam.
-                else:
-                    print('No Changes have occured')
-                    time.sleep(60)
+                    # No changes have occured, wait 10 seconds to rescan steam.
+                    else:
+                        print('No Changes have occured')
+                        time.sleep(60)
+                except Exception as e:
+                    print("Exception at Scout.py monitor with error: " + str(e))
+                    time.sleep(30)
 
             # Connection error occured, wait 10 seconds before retrying.
             else:
-                print('Steam Connection Error. client.isConnected() returned false.')
-                time.sleep(10)
+                print('Steam Connection Error.')
+                print('Is Connected: ' + str(self.client.steam.connected))
+                print('Is loggedin: ' + str(self.client.steam.logged_on))
+                time.sleep(60)
 
     # Iterate tasks and process those apps (not from PICSChanges)
     def handleTasks(self):
         # See if any tasks exist
         if Task.objects.all():  
-            print('Tasks are in queue, startin processing')
+            print('Tasks are in queue, starting processing')
             for task in Task.objects.all():
                 # Dispatch the app, then delete the task 
                 self.handleProcessDispatch(task.appid, task.changenumber)
