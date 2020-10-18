@@ -1,6 +1,5 @@
 import gevent.monkey
-gevent.monkey.patch_socket()
-gevent.monkey.patch_ssl()
+gevent.monkey.patch_all(socket=True, dns=True, time=True, select=True,thread=False, os=True, ssl=True, httplib=False, aggressive=True)
 
 import time
 from django.core.management.base import BaseCommand, CommandError
@@ -26,61 +25,49 @@ class Command(BaseCommand):
         # In house API wrapper instance
         self.api = SteamApi()
         # Client object
-        self.client = SteamWorker()
+        self.worker = SteamWorker()
 
     def handle(self, *args, **options):
-        print('-'*30)
-        print('Starting Scout...')
-        self.client.client_login()
-        print('Login Successful.')
-        print('-'*30)
+        print('--------------------- Starting client connection ---------------------')
+        self.worker = SteamWorker()
+        self.worker.client_login()
+        print('----------------------------------------------------------------------')
+        time.sleep(5)
+        print('Connected: ' + str(worker.steam.connected))
+        print('Logged In: ' + str(worker.steam.logged_on))
+        time.sleep(5)
 
         # Get the current changelog to start from
-        currentChangeNum = self.client.get_product_changes(0)['current_change_number']
+        currentChangeNum = self.worker.get_product_changes(0)['current_change_number']
 
         # Start mointoring changelogs
         while True:
-            if self.client.steam.connected and self.client.steam.logged_on:
-                try:
-                    # First, check for exists tasks to process first.
-                    self.handleTasks()
-                    # Get the changes from the current change number
-                    changes = self.client.get_product_changes(currentChangeNum)
-                    # Check if changes have occured by comparing change number values
-                    if currentChangeNum != changes['current_change_number']:
-                        print('Changes have occured')
-                        print(str(changes))
-                        # If here, changes have occured
-                        # Check if any of the changes where app changes (we aren't tracking any other changes)
-                        if changes.get('app_changes'):
-                            print('Changes: ' + str(changes.get('app_changes')))
-                            # Iterate changes and process each appid
-                            for change in changes.get('app_changes'):
-                                print(str(change))
-                                # Grab the appid of the change so we can get the app deatils.
-                                appid = change['appid']
-                                
-                                self.handleProcessDispatch(appid, change['change_number'])
+            # First, check for exists tasks to process first.
+            self.handleTasks()
+            # Get the changes from the current change number
+            changes = self.worker.get_product_changes(currentChangeNum)
+            # Check if changes have occured by comparing change number values
+            if currentChangeNum != changes['current_change_number']:
+                # If here, changes have occured
+                # Check if any of the changes where app changes (we aren't tracking any other changes)
+                if changes.get('app_changes'):
+                    # Iterate changes and process each appid
+                    for change in changes.get('app_changes'):
+                        print(str(change))
+                        # Grab the appid of the change so we can get the app deatils.
+                        appid = change['appid']
+                        
+                        self.handleProcessDispatch(appid, change['change_number'])
 
-                                # Timeout for 10 seconds to avoid excessive requests.
-                                time.sleep(10)
+                        # Timeout for 10 seconds to avoid excessive requests.
+                        time.sleep(10)
 
-                            # Set the new changenumber
-                            currentChangeNum = changes['current_change_number']
+                    # Set the new changenumber
+                    currentChangeNum = changes['current_change_number']
 
-                    # No changes have occured, wait 10 seconds to rescan steam.
-                    else:
-                        print('No Changes have occured')
-                        time.sleep(60)
-                except Exception as e:
-                    print("Exception at Scout.py monitor with error: " + str(e))
-                    time.sleep(30)
-
-            # Connection error occured, wait 10 seconds before retrying.
+            # No changes have occured, wait 10 seconds to rescan steam.
             else:
-                print('Steam Connection Error.')
-                print('Is Connected: ' + str(self.client.steam.connected))
-                print('Is loggedin: ' + str(self.client.steam.logged_on))
+                print('No Changes have occured')
                 time.sleep(60)
 
     # Iterate tasks and process those apps (not from PICSChanges)
@@ -96,7 +83,7 @@ class Command(BaseCommand):
     # Grabs app info via steam and dispatches the payload to be processed via model processor
     def handleProcessDispatch(self, appid, changenumber):
         # Grab app info from steam client
-        payload = self.client.get_product_info([appid])
+        payload = self.worker.get_product_info([appid])
 
         # Check for payload faults
         if payload == None or 'apps' not in payload or 'appinfo' not in payload['apps'][0] or 'common' not in payload['apps'][0]['appinfo']:

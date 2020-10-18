@@ -5,6 +5,8 @@ from steam.core.msg import MsgProto
 from steam.enums.emsg import EMsg
 from steam.utils.proto import proto_to_dict
 import vdf
+
+# Steam login credentials from secret file
 from djangosteamkit.secrets import SC_STEAM_LOGIN
 
 
