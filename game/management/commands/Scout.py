@@ -33,8 +33,8 @@ class Command(BaseCommand):
         self.worker.client_login()
         print('----------------------------------------------------------------------')
         time.sleep(5)
-        print('Connected: ' + str(worker.steam.connected))
-        print('Logged In: ' + str(worker.steam.logged_on))
+        print('Connected: ' + str(self.worker.steam.connected))
+        print('Logged In: ' + str(self.worker.steam.logged_on))
         time.sleep(5)
 
         # Get the current changelog to start from
