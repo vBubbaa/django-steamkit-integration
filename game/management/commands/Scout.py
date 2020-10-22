@@ -38,7 +38,15 @@ class Command(BaseCommand):
         time.sleep(5)
 
         # Get the current changelog to start from
-        currentChangeNum = self.worker.get_product_changes(0)['current_change_number']
+        fetchedChangeNumber = self.worker.get_product_changes(0)['current_change_number']
+        print(fetchedChangeNumber)
+
+        # Write change number to last change number file
+        writeNum = open("lastchangenumber.txt", "w")
+        writeNum.write(str(fetchedChangeNumber))
+        writeNum.close()
+        
+        currentChangeNum = int(open("lastchangenumber.txt", "r").read())
 
         # Start mointoring changelogs
         while True:
@@ -63,7 +71,9 @@ class Command(BaseCommand):
                         time.sleep(10)
 
                     # Set the new changenumber
-                    currentChangeNum = changes['current_change_number']
+                    with open("lastchangenumber.txt", "w") as f:
+                        f.write(str(changes['current_change_number']))
+                        f.close()
 
             # No changes have occured, wait 10 seconds to rescan steam.
             else:
