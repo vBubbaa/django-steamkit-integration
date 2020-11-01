@@ -1,6 +1,5 @@
 import gevent.monkey
-gevent.monkey.patch_socket()
-gevent.monkey.patch_ssl()
+gevent.monkey.patch_all(socket=True, dns=True, time=True, select=True,thread=False, os=True, ssl=True, httplib=False, aggressive=True)
 
 # Threading for faster response building
 import threading
@@ -194,6 +193,51 @@ class UserOverview(APIView):
         self.steamid = kwargs.get('steamid')
         self.getUserDetails()
         self.getVacs()
+        return Response(self.res)
+
+
+class UserSearch(APIView):
+    def __init__(self):
+        # Passed back res with all games parsed with correct information from out database
+        self.res = {}
+        self.isPrivate = False
+        # Steamid we will set by the URL parameter @steamid
+        self.url = None
+        self.steamid = None
+        self.userDetails = []
+        self.IdOrVanity = None
+        self.api = SteamApi()
+
+    def getIdOrVanity(self):
+        url = str(self.url)
+        # Check if the profiles URL has the steamid, or is a vanity url
+        if "steamcommunity" in url:
+
+            # Is vanity, get the steamid from vanity with Steam API
+            if "/id/" in url:
+                vanityIDIndex = url.find('/id/')
+                vanity = url[vanityIDIndex:].replace('/id/', '').replace('/', '')
+                self.steamid = self.api.resolveVanity(vanity)
+
+            # Is ID, just set steamid to ID in URL
+            if "/profiles" in url:
+                IDIndex = url.find('/profiles/')
+                ID = url[IDIndex:].replace('/profiles/', '').replace('/', '')
+                self.steamid = ID
+                
+
+    def getUserDetails(self):
+        userDetails = self.api.getUserDetails(self.steamid)
+        if userDetails['response']['players']['player'][0].get('communityvisibilitystate') == 1:
+            self.isPrivate = True
+            self.res['private'] = True
+        self.res['userdetails'] = userDetails
+
+    def get(self, request, *args, **kwargs):
+        self.url = request.GET.get('url', '')
+        print(str(self.url))
+        self.getIdOrVanity()
+        self.getUserDetails()
         return Response(self.res)
 
 

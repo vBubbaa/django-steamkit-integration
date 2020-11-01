@@ -128,3 +128,14 @@ class SteamApi():
                   str(appid) + ' and error: ' + str(e))
             returnList = None
             return returnList
+
+    def resolveVanity(self, vanity):
+        print(str(vanity))
+        method = '/ISteamUser/ResolveVanityURL/v0001/'
+        url = settings.STEAM_ROOT_ENDPOINT + method
+        params = {'key': STEAM_API_KEY, 'vanityurl': str(vanity)}
+        request = requests.get(url, params)
+        response = request.json()
+        print(str(response))
+
+        return response
