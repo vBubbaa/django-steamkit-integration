@@ -96,6 +96,7 @@ class UserOverviewGames(APIView):
         self.res = {}
         self.games = []
         self.libraryCost = 0
+        self.appsNotInDB = 0
         # Steam web api method of to grab owned games by player
         self.method = '/IPlayerService/GetOwnedGames/v001'
 
@@ -132,6 +133,7 @@ class UserOverviewGames(APIView):
                 
             # If it doesn't exist, use the player>getownedgames api to fetch the app details
             else:
+                self.appsNotInDB += 1
                 # Check if a task is already in existence for the given appid, if it already exists dont create another identical task
                 if not Task.objects.filter(appid=str(game['appid'])).exists():
                     # Create a new task to process the app into our database
@@ -155,6 +157,7 @@ class UserOverviewGames(APIView):
         # Append the game list to the response
         self.res['games'] = self.games
         self.res['libcost'] = round(self.libraryCost, 2)
+        self.res['appsNotInDB'] = self.appsNotInDB
 
 
     def get(self, request, *args, **kwargs):
